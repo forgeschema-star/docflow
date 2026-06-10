@@ -1,0 +1,2640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocFlow — Feature Reference</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3250;
+      --accent: #5b8af5;
+      --accent2: #8b5cf6;
+      --green: #22c55e;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --muted: #7c849e;
+      --tag-bg: #1e2540;
+      --code-bg: #111827;
+      --radius: 10px;
+      --font-mono: "Fira Code", "Cascadia Code", Consolas, monospace;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    /* ── LAYOUT ── */
+    .layout { display: flex; min-height: 100vh; }
+
+    nav {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 24px 0 40px;
+    }
+
+    nav .logo {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    nav .logo h1 { font-size: 18px; font-weight: 700; color: var(--accent); }
+    nav .logo p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    nav ul { list-style: none; }
+    nav ul li a {
+      display: block;
+      padding: 7px 20px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      border-left: 2px solid transparent;
+      transition: all .15s;
+    }
+    nav ul li a:hover, nav ul li a.active {
+      color: var(--text);
+      background: var(--surface2);
+      border-left-color: var(--accent);
+    }
+
+    nav .nav-section {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding: 16px 20px 4px;
+    }
+
+    main { flex: 1; padding: 40px 48px; max-width: 1100px; }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #1e2540 0%, #14182e 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 40px;
+      margin-bottom: 40px;
+    }
+
+    .hero h2 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+    .hero p { color: var(--muted); max-width: 620px; line-height: 1.7; }
+
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid;
+    }
+    .badge.blue  { color: #60a5fa; border-color: #1e3a5f; background: #0f2040; }
+    .badge.purple{ color: #a78bfa; border-color: #3b1e6f; background: #1e0f40; }
+    .badge.green { color: #4ade80; border-color: #14532d; background: #0d2e1a; }
+
+    /* ── SECTION ── */
+    section { margin-bottom: 56px; scroll-margin-top: 24px; }
+    section h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    section h2 .icon { font-size: 22px; }
+
+    section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 28px 0 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    /* ── CARD GRID ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .card .card-title {
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .card .card-sub { font-size: 12px; color: var(--muted); }
+
+    /* ── CONVERSION TABLE ── */
+    .conv-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .conv-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .conv-card .arrow { color: var(--accent); font-weight: 700; }
+    .conv-card .from { font-weight: 600; }
+    .conv-card .to   { color: var(--muted); }
+
+    /* ── CODE BLOCK ── */
+    .code-wrap {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    .code-header .lang { color: var(--accent); font-weight: 700; }
+
+    pre {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      padding: 20px;
+      overflow-x: auto;
+      line-height: 1.75;
+    }
+
+    .kw  { color: #7dd3fc; }
+    .cls { color: #a78bfa; }
+    .str { color: #86efac; }
+    .cmt { color: #4b5563; font-style: italic; }
+    .num { color: #fbbf24; }
+    .met { color: #67e8f9; }
+
+    /* ── OVERLOAD TABLE ── */
+    .overload-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    .overload-table th {
+      text-align: left;
+      padding: 8px 12px;
+      background: var(--surface2);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .overload-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      vertical-align: top;
+    }
+
+    .overload-table tr:last-child td { border-bottom: none; }
+    .overload-table tr:hover td { background: var(--surface2); }
+
+    /* ── ERROR TABLE ── */
+    .error-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 10px;
+    }
+
+    .error-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+
+    .error-card .code-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .error-card .code-name {
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .error-card .code-desc { font-size: 12px; color: var(--muted); }
+
+    .error-card.ok    .code-name { color: var(--green); }
+    .error-card.warn  .code-name { color: var(--yellow); }
+    .error-card.err   .code-name { color: var(--red); }
+
+    /* ── SETTINGS GRID ── */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 12px;
+    }
+
+    .setting-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .setting-card .prop {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .setting-card .type {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent2);
+      margin-bottom: 6px;
+    }
+
+    .setting-card .desc { font-size: 12px; color: var(--muted); }
+    .setting-card .default { font-size: 11px; color: var(--green); margin-top: 6px; }
+
+    /* ── METHOD LIST ── */
+    .method-list { list-style: none; }
+    .method-list li {
+      padding: 8px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .method-list li .async-tag {
+      font-size: 10px;
+      background: var(--tag-bg);
+      color: var(--accent);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: sans-serif;
+      font-weight: 700;
+    }
+
+    /* ── DI SECTION ── */
+    .di-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .di-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      font-size: 12px;
+    }
+
+    .di-card .di-title { font-weight: 700; margin-bottom: 6px; font-size: 13px; }
+    .di-card code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent2);
+    }
+
+    /* ── CALLOUT ── */
+    .callout {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      font-size: 13px;
+      border: 1px solid;
+    }
+
+    .callout.info  { background: #0f2040; border-color: #1e3a5f; color: #93c5fd; }
+    .callout.warn  { background: #2d1e00; border-color: #78350f; color: #fcd34d; }
+    .callout .icon { flex-shrink: 0; font-size: 16px; }
+
+    /* ── TOC SCROLLSPY ── */
+    @media (max-width: 900px) {
+      nav { display: none; }
+      main { padding: 24px 20px; }
+      .conv-grid { grid-template-columns: 1fr 1fr; }
+      .di-options { grid-template-columns: 1fr; }
+    }
+
+    /* ── DEMO LAYOUT ── */
+    .demo-layout {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .demo-form-col { flex: 1; }
+    .demo-code-col { flex: 1.3; }
+
+    .demo-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── FORM FIELDS ── */
+    .field-row { display: flex; flex-direction: column; gap: 5px; }
+
+    .field-row label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .field-row input[type="text"],
+    .field-row textarea {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      padding: 8px 10px;
+      font-family: inherit;
+      resize: vertical;
+      transition: border-color .15s;
+      width: 100%;
+    }
+
+    .field-row input[type="text"]:focus,
+    .field-row textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 400 !important;
+      text-transform: none !important;
+      letter-spacing: 0 !important;
+    }
+
+    /* ── BUTTONS ── */
+    .demo-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .demo-btn:hover  { opacity: .85; }
+    .demo-btn:active { transform: scale(.97); }
+    .demo-btn.secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .demo-btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .add-row-btn {
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 6px;
+      width: 100%;
+      transition: color .15s, border-color .15s;
+    }
+    .add-row-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ── EXCEL ROW INPUTS ── */
+    .xl-row-input {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .xl-row-input input {
+      flex: 1;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text);
+      font-size: 12px;
+      padding: 6px 8px;
+      font-family: inherit;
+    }
+    .xl-row-input input:focus { outline: none; border-color: var(--accent); }
+    .xl-row-input .del-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 0 4px;
+      line-height: 1;
+    }
+    .xl-row-input .del-btn:hover { color: var(--red); }
+
+    /* ── EXCEL LIVE PREVIEW ── */
+    .xl-preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .xl-preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .xl-preview-table th {
+      background: #2e3a52;
+      color: #c0ccdf;
+      font-weight: 700;
+      padding: 8px 12px;
+      text-align: center;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .xl-preview-table td {
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-align: center;
+    }
+    .xl-preview-table tbody tr:nth-child(even) td { background: #151820; }
+
+    /* ── PLACEHOLDER TEMPLATE PREVIEW ── */
+    .placeholder-template-preview {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .pt-header {
+      background: var(--surface2);
+      padding: 8px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      border-bottom: 1px solid var(--border);
+    }
+    .pt-body {
+      padding: 14px 16px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+    .ph {
+      background: #1e2e0f;
+      color: #86efac;
+      border: 1px solid #2a4a15;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    /* Excel template table */
+    .xl-template-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .xl-template-table td {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+    }
+    .cell-label {
+      font-weight: 700;
+      color: var(--muted);
+      background: var(--surface2);
+      width: 40%;
+    }
+    .cell-ph {
+      font-family: var(--font-mono);
+      color: #86efac;
+      background: #1e2e0f;
+    }
+
+    .ph-fields { display: flex; flex-direction: column; gap: 8px; }
+
+    @media (max-width: 900px) {
+      .demo-layout { flex-direction: column; }
+    }
+
+    /* ── THEME TOGGLE ── */
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .theme-toggle input { display: none; }
+    .theme-track {
+      width: 34px; height: 18px;
+      background: var(--border);
+      border-radius: 9px;
+      position: relative;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+    .theme-track::after {
+      content: '';
+      position: absolute;
+      left: 3px; top: 3px;
+      width: 12px; height: 12px;
+      background: var(--muted);
+      border-radius: 50%;
+      transition: transform .2s, background .2s;
+    }
+    .theme-toggle input:checked ~ .theme-track { background: var(--accent); }
+    .theme-toggle input:checked ~ .theme-track::after { transform: translateX(16px); background: #fff; }
+    .theme-toggle span { font-size: 12px; color: var(--muted); }
+
+    /* ── LIGHT MODE ── */
+    body.light {
+      --bg: #f4f6fb;
+      --surface: #ffffff;
+      --surface2: #edf0f7;
+      --border: #d1d8e8;
+      --text: #1a1d27;
+      --muted: #6b7494;
+      --code-bg: #f0f2f8;
+      --tag-bg: #e8eaf6;
+    }
+    body.light .kw  { color: #1d4ed8; }
+    body.light .cls { color: #7c3aed; }
+    body.light .str { color: #16a34a; }
+    body.light .cmt { color: #9ca3af; }
+    body.light .met { color: #0891b2; }
+    body.light .num { color: #d97706; }
+
+    /* ── TOAST ── */
+    #toast-container {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      display: flex; flex-direction: column;
+      gap: 8px; z-index: 9999;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--green);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 13px;
+      color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
+      animation: toast-in .2s ease;
+      pointer-events: all;
+    }
+    .toast.error { border-left-color: var(--red); }
+    .toast.info  { border-left-color: var(--accent); }
+    @keyframes toast-in {
+      from { transform: translateX(40px); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+    @keyframes toast-out {
+      to { transform: translateX(40px); opacity: 0; }
+    }
+    .toast.leaving { animation: toast-out .2s ease forwards; }
+
+    /* ── COPY BUTTON ── */
+    .copy-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 5px;
+      padding: 2px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: color .15s, border-color .15s;
+      font-family: inherit;
+    }
+    .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+    /* ── CONVERT DEMO ── */
+    .format-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .format-select {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      width: 100%;
+      cursor: pointer;
+    }
+    .format-select:focus { outline: none; border-color: var(--accent); }
+    .arrow-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+      white-space: nowrap;
+    }
+    .arrow-btn:hover { background: var(--border); }
+    .convert-note {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .convert-note strong { color: var(--text); }
+
+    /* ── READ DEMO ── */
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 36px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: var(--code-bg);
+    }
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: var(--accent);
+      background: #0f1e3a;
+    }
+    .dropzone input { display: none; }
+    .dropzone .dz-icon { font-size: 36px; margin-bottom: 8px; }
+    .dropzone .dz-text { font-size: 13px; color: var(--muted); }
+    .dropzone .dz-text strong { color: var(--accent); }
+
+    .read-output {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      min-height: 120px;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-y: auto;
+      max-height: 400px;
+    }
+    .read-output-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .read-output-table th {
+      background: var(--surface2);
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      font-weight: 700;
+      text-align: left;
+    }
+    .read-output-table td {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+    }
+    .read-stat {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      background: var(--tag-bg);
+      color: var(--muted);
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-right: 6px;
+    }
+
+    /* ── JSON/CSV IMPORT ── */
+    .import-panel {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .import-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      user-select: none;
+    }
+    .import-toggle:hover { color: var(--accent); }
+    .import-body { display: none; padding: 12px; border-top: 1px solid var(--border); }
+    .import-body.open { display: block; }
+    .import-body textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 8px 10px;
+      resize: vertical;
+      min-height: 80px;
+    }
+    .import-body textarea:focus { outline: none; border-color: var(--accent); }
+    .import-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .import-tab {
+      padding: 4px 12px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: transparent;
+    }
+    .import-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── EXCEL CODE PREVIEW ── */
+    #xl-code-preview { font-size: 12px; }
+
+    /* ── TEMPLATE LIVE PREVIEW ── */
+    .template-live-preview {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .template-live-preview .tlp-header {
+      background: var(--surface2);
+      padding: 8px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+    }
+    .tlp-body {
+      padding: 14px 16px;
+      font-size: 13px;
+      line-height: 1.9;
+      color: var(--text);
+    }
+    .tlp-val { color: var(--green); font-weight: 600; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      main { padding: 24px 16px; }
+      .format-grid { grid-template-columns: 1fr; }
+      .arrow-btn { transform: rotate(90deg); width: fit-content; margin: 0 auto; }
+      .xl-row-input { flex-wrap: wrap; }
+      .xl-row-input input { min-width: 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <nav id="sidebar">
+    <div class="logo">
+      <h1>DocFlow</h1>
+      <p>Document Converter Library</p>
+      <label class="theme-toggle" title="Toggle light/dark mode">
+        <input type="checkbox" id="theme-toggle-cb" />
+        <span class="theme-track"></span>
+        <span id="theme-label">Light mode</span>
+      </label>
+    </div>
+    <ul>
+      <li class="nav-section">Overview</li>
+      <li><a href="#overview">Features at a Glance</a></li>
+      <li><a href="#setup">Setup & DI</a></li>
+
+      <li class="nav-section">Services</li>
+      <li><a href="#conversion">IConversionService</a></li>
+      <li><a href="#word">IWordService</a></li>
+      <li><a href="#pdf">IPdfService</a></li>
+      <li><a href="#excel">IExcelService</a></li>
+      <li><a href="#csv">ICsvService</a></li>
+      <li><a href="#html">IHtmlService</a></li>
+      <li><a href="#image">IImageService</a></li>
+
+      <li class="nav-section">Live Demo</li>
+      <li><a href="#demo-word">✏️ Create Word Doc</a></li>
+      <li><a href="#demo-excel">📊 Create Excel File</a></li>
+      <li><a href="#demo-convert">🔄 Convert Formats</a></li>
+      <li><a href="#demo-read">📂 Read & Extract</a></li>
+
+      <li class="nav-section">Config & Errors</li>
+      <li><a href="#settings">DocFlowSettings</a></li>
+      <li><a href="#errors">Error Codes</a></li>
+      <li><a href="#result">ConversionResult</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <!-- HERO -->
+    <div class="hero">
+      <h2>DocFlow — Document Converter</h2>
+      <p>
+        A .NET library for converting, reading, and creating Word, PDF, Excel, CSV, HTML,
+        and Image documents. Every service supports file, stream, and byte-array overloads
+        with full async/await support.
+      </p>
+      <div class="badges">
+        <span class="badge blue">.NET 6+</span>
+        <span class="badge blue">ASP.NET Core DI</span>
+        <span class="badge purple">OpenXML · QuestPDF · ClosedXML</span>
+        <span class="badge purple">Tesseract OCR · PdfPig</span>
+        <span class="badge green">6 document types</span>
+        <span class="badge green">Async throughout</span>
+      </div>
+    </div>
+
+    <!-- ── OVERVIEW ── -->
+    <section id="overview">
+      <h2><span class="icon">🗂</span> Features at a Glance</h2>
+
+      <h3>Supported Document Types</h3>
+      <div class="card-grid">
+        <div class="card"><div class="card-title">📄 Word</div><div class="card-sub">.docx — create, read, template replace, convert to PDF</div></div>
+        <div class="card"><div class="card-title">📕 PDF</div><div class="card-sub">.pdf — read text, extract images, convert to Word/Excel</div></div>
+        <div class="card"><div class="card-title">📊 Excel</div><div class="card-sub">.xlsx — create, read, template replace, convert to PDF</div></div>
+        <div class="card"><div class="card-title">📋 CSV</div><div class="card-sub">.csv — create, read, convert to/from Excel/PDF</div></div>
+        <div class="card"><div class="card-title">🌐 HTML</div><div class="card-sub">.html — extract text/tables, convert to Word/PDF/Excel</div></div>
+        <div class="card"><div class="card-title">🖼 Image</div><div class="card-sub">PNG/JPG — OCR text extraction, embed in PDF/Word/Excel</div></div>
+      </div>
+
+      <h3>All Supported Conversions (IConversionService)</h3>
+      <div class="conv-grid">
+        <div class="conv-card"><span class="from">Word</span><span class="arrow">→</span><span class="to">PDF</span></div>
+        <div class="conv-card"><span class="from">PDF</span><span class="arrow">→</span><span class="to">Word</span></div>
+        <div class="conv-card"><span class="from">Excel</span><span class="arrow">→</span><span class="to">PDF</span></div>
+        <div class="conv-card"><span class="from">PDF</span><span class="arrow">→</span><span class="to">Excel</span></div>
+        <div class="conv-card"><span class="from">CSV</span><span class="arrow">→</span><span class="to">Excel</span></div>
+        <div class="conv-card"><span class="from">Excel</span><span class="arrow">→</span><span class="to">CSV</span></div>
+        <div class="conv-card"><span class="from">CSV</span><span class="arrow">→</span><span class="to">PDF</span></div>
+        <div class="conv-card"><span class="from">HTML</span><span class="arrow">→</span><span class="to">Word</span></div>
+        <div class="conv-card"><span class="from">HTML</span><span class="arrow">→</span><span class="to">PDF</span></div>
+        <div class="conv-card"><span class="from">HTML</span><span class="arrow">→</span><span class="to">Excel</span></div>
+        <div class="conv-card"><span class="from">Image</span><span class="arrow">→</span><span class="to">PDF</span></div>
+        <div class="conv-card"><span class="from">Image</span><span class="arrow">→</span><span class="to">Word</span></div>
+        <div class="conv-card"><span class="from">Image</span><span class="arrow">→</span><span class="to">Excel</span></div>
+        <div class="conv-card"><span class="from">Any</span><span class="arrow">→</span><span class="to">Same (passthrough)</span></div>
+      </div>
+
+      <h3>3 Input Modes × Sync + Async</h3>
+      <div class="card-grid">
+        <div class="card"><div class="card-title">📁 File Paths</div><div class="card-sub">Read from / write to file system paths</div></div>
+        <div class="card"><div class="card-title">🌊 Streams</div><div class="card-sub">System.IO.Stream in/out — ideal for web requests</div></div>
+        <div class="card"><div class="card-title">🔢 Byte Arrays</div><div class="card-sub">byte[] in, returns ConversionResult with OutputBytes</div></div>
+        <div class="card"><div class="card-title">⚡ Async</div><div class="card-sub">All methods have Async variants with CancellationToken</div></div>
+      </div>
+    </section>
+
+    <!-- ── SETUP ── -->
+    <section id="setup">
+      <h2><span class="icon">⚙️</span> Setup & Dependency Injection</h2>
+
+      <h3>Register Services</h3>
+      <div class="di-options">
+        <div class="di-card">
+          <div class="di-title">Defaults only</div>
+          <div class="card-sub" style="font-size:12px;color:var(--muted);margin-bottom:8px">25 MB limit, system temp dir, logging on</div>
+          <code>services.AddDocFlowCore();</code>
+        </div>
+        <div class="di-card">
+          <div class="di-title">With custom logger</div>
+          <div class="card-sub" style="font-size:12px;color:var(--muted);margin-bottom:8px">Plug in your own ILogger implementation</div>
+          <code>services.AddDocFlowCore(myLogger);</code>
+        </div>
+        <div class="di-card">
+          <div class="di-title">Logger + settings</div>
+          <div class="card-sub" style="font-size:12px;color:var(--muted);margin-bottom:8px">Full control over all settings</div>
+          <code>services.AddDocFlowCore(myLogger, settings);</code>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span> — Program.cs / Startup.cs</div>
+        <pre><span class="kw">var</span> settings = <span class="kw">new</span> <span class="cls">DocFlowSettings</span>
+{
+    TempDirectory    = <span class="str">"/tmp/docflow"</span>,
+    OcrDataPath      = <span class="str">"/usr/share/tessdata"</span>,
+    MaxFileSizeBytes = <span class="num">50_000_000</span>,   <span class="cmt">// 50 MB</span>
+    LoggingEnabled   = <span class="kw">true</span>,
+    AllowOverwrite   = <span class="kw">false</span>,
+};
+
+builder.Services.<span class="met">AddDocFlowCore</span>(logger, settings);
+
+<span class="cmt">// Injected interfaces available:</span>
+<span class="cmt">// IConversionService, IWordService, IExcelService,</span>
+<span class="cmt">// IPdfService, ICsvService, IHtmlService, IImageService</span></pre>
+      </div>
+
+      <div class="callout info">
+        <span class="icon">ℹ️</span>
+        <span>OCR features (Image → Word / Excel) require the <strong>Tesseract data files</strong> and a valid <code>OcrDataPath</code> in settings.</span>
+      </div>
+    </section>
+
+    <!-- ── CONVERSION SERVICE ── -->
+    <section id="conversion">
+      <h2><span class="icon">🔄</span> IConversionService</h2>
+      <p style="color:var(--muted);margin-bottom:20px">
+        The top-level orchestrator. Routes conversions between format-specific services.
+        Use this when you don't need service-specific extras (templates, OCR, image extraction).
+      </p>
+
+      <h3>Method Overloads</h3>
+      <table class="overload-table">
+        <thead>
+          <tr><th>Overload</th><th>Input</th><th>Output</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Convert(from, to, inputPath, outputPath)</td><td>file path</td><td>file path</td><td>Returns ConversionResult</td></tr>
+          <tr><td>Convert(from, to, inputStream, outputStream)</td><td>Stream</td><td>Stream</td><td>Returns ConversionResult</td></tr>
+          <tr><td>Convert(from, to, inputBytes)</td><td>byte[]</td><td>—</td><td>OutputBytes on result</td></tr>
+          <tr><td>ConvertAsync(from, to, inputPath, outputPath, ct)</td><td>file path</td><td>file path</td><td>Async</td></tr>
+          <tr><td>ConvertAsync(from, to, inputStream, outputStream, ct)</td><td>Stream</td><td>Stream</td><td>Async</td></tr>
+          <tr><td>ConvertAsync(from, to, inputBytes, ct)</td><td>byte[]</td><td>—</td><td>Async</td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span> — File-to-File Conversion</div>
+        <pre><span class="kw">var</span> result = <span class="kw">await</span> _conversionService.<span class="met">ConvertAsync</span>(
+    <span class="cls">DocumentType</span>.Word,
+    <span class="cls">DocumentType</span>.Pdf,
+    <span class="str">@"C:\input\report.docx"</span>,
+    <span class="str">@"C:\output\report.pdf"</span>
+);
+
+<span class="kw">if</span> (result.Success)
+    Console.<span class="met">WriteLine</span>(<span class="str">$"Saved to {result.OutputPath}"</span>);
+<span class="kw">else</span>
+    Console.<span class="met">WriteLine</span>(<span class="str">$"[{result.ErrorCode}] {result.Message}"</span>);</pre>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span> — Bytes-to-Bytes (ASP.NET Controller)</div>
+        <pre>[<span class="cls">HttpPost</span>(<span class="str">"convert"</span>)]
+<span class="kw">public async</span> Task&lt;IActionResult&gt; <span class="met">Convert</span>([<span class="cls">FromForm</span>] IFormFile file)
+{
+    <span class="kw">byte</span>[] inputBytes;
+    <span class="kw">using</span> (<span class="kw">var</span> ms = <span class="kw">new</span> <span class="cls">MemoryStream</span>())
+    {
+        <span class="kw">await</span> file.CopyToAsync(ms);
+        inputBytes = ms.ToArray();
+    }
+
+    <span class="kw">var</span> result = <span class="kw">await</span> _conversionService.<span class="met">ConvertAsync</span>(
+        <span class="cls">DocumentType</span>.Word, <span class="cls">DocumentType</span>.Pdf, inputBytes
+    );
+
+    <span class="kw">if</span> (!result.Success) <span class="kw">return</span> <span class="met">BadRequest</span>(result.Message);
+
+    <span class="kw">return</span> <span class="met">File</span>(result.OutputBytes, <span class="str">"application/pdf"</span>, <span class="str">"output.pdf"</span>);
+}</pre>
+      </div>
+    </section>
+
+    <!-- ── WORD SERVICE ── -->
+    <section id="word">
+      <h2><span class="icon">📄</span> IWordService</h2>
+
+      <h3>Create a Word Document</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span> — Create from plain text</div>
+        <pre><span class="cmt">// File-based</span>
+<span class="kw">await</span> _wordService.<span class="met">CreateWordAsync</span>(<span class="str">@"C:\output\hello.docx"</span>, <span class="str">"Hello, World!"</span>);
+
+<span class="cmt">// Stream-based</span>
+<span class="kw">using var</span> ms = <span class="kw">new</span> <span class="cls">MemoryStream</span>();
+<span class="kw">await</span> _wordService.<span class="met">CreateWordAsync</span>(ms, <span class="str">"Hello, World!"</span>);
+
+<span class="cmt">// Bytes — returns byte[]</span>
+<span class="kw">byte</span>[] docBytes = <span class="kw">await</span> _wordService.<span class="met">CreateWordAsync</span>(<span class="str">"Hello, World!"</span>);</pre>
+      </div>
+
+      <h3>Read a Word Document</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span> — Extract text content</div>
+        <pre><span class="kw">string</span> text = <span class="kw">await</span> _wordService.<span class="met">ReadWordAsync</span>(<span class="str">@"C:\docs\report.docx"</span>);
+Console.<span class="met">WriteLine</span>(text);
+
+<span class="cmt">// Stream overload</span>
+<span class="kw">string</span> text2 = <span class="kw">await</span> _wordService.<span class="met">ReadWordAsync</span>(fileStream);
+
+<span class="cmt">// Bytes overload</span>
+<span class="kw">string</span> text3 = <span class="kw">await</span> _wordService.<span class="met">ReadWordAsync</span>(docBytes);</pre>
+      </div>
+
+      <h3>Template Placeholder Replacement</h3>
+      <div class="callout info">
+        <span class="icon">ℹ️</span>
+        <span>Placeholders in the .docx template must be written as <strong>&#123;&#123;KeyName&#125;&#125;</strong>. Pass an <code>IDictionary&lt;string, string&gt;</code> to replace all occurrences.</span>
+      </div>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span> — Replace &#123;&#123;placeholders&#125;&#125; in a template</div>
+        <pre><span class="kw">var</span> placeholders = <span class="kw">new</span> <span class="cls">Dictionary</span>&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt;
+{
+    { <span class="str">"CustomerName"</span>, <span class="str">"Acme Corp"</span>    },
+    { <span class="str">"InvoiceDate"</span>,  <span class="str">"2024-06-10"</span>   },
+    { <span class="str">"TotalAmount"</span>,  <span class="str">"$4,500.00"</span>    },
+};
+
+<span class="cmt">// File-based</span>
+<span class="kw">await</span> _wordService.<span class="met">ReplacePlaceholdersAsync</span>(
+    <span class="str">@"C:\templates\invoice_template.docx"</span>,
+    <span class="str">@"C:\output\invoice_acme.docx"</span>,
+    placeholders
+);
+
+<span class="cmt">// Bytes — returns modified bytes</span>
+<span class="kw">byte</span>[] filled = <span class="kw">await</span> _wordService.<span class="met">ReplacePlaceholdersAsync</span>(templateBytes, placeholders);</pre>
+      </div>
+
+      <h3>Convert Word → PDF</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="kw">byte</span>[] pdfBytes = <span class="kw">await</span> _wordService.<span class="met">ConvertWordToPdfAsync</span>(docBytes);
+
+<span class="cmt">// File path overload</span>
+<span class="kw">await</span> _wordService.<span class="met">ConvertWordToPdfAsync</span>(<span class="str">"input.docx"</span>, <span class="str">"output.pdf"</span>);</pre>
+      </div>
+
+      <h3>All Methods</h3>
+      <ul class="method-list">
+        <li>CreateWord / <span class="async-tag">Async</span> — (path, content) · (stream, content) · (content) → bytes</li>
+        <li>ReadWord / <span class="async-tag">Async</span> — (path) · (stream) · (bytes) → string</li>
+        <li>ReplacePlaceholders / <span class="async-tag">Async</span> — (templatePath, outputPath, dict) · (stream×2, dict) · (bytes, dict) → bytes</li>
+        <li>ConvertWordToPdf / <span class="async-tag">Async</span> — (inputPath, outputPath) · (inStream, outStream) · (bytes) → bytes</li>
+      </ul>
+    </section>
+
+    <!-- ── PDF SERVICE ── -->
+    <section id="pdf">
+      <h2><span class="icon">📕</span> IPdfService</h2>
+
+      <h3>Read PDF Text</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="kw">string</span> text = <span class="kw">await</span> _pdfService.<span class="met">ReadPdfAsync</span>(<span class="str">@"C:\docs\contract.pdf"</span>);
+<span class="cmt">// Returns all text extracted from all pages</span></pre>
+      </div>
+
+      <h3>Extract Images from PDF</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="cls">IList</span>&lt;<span class="kw">string</span>&gt; savedFiles = <span class="kw">await</span> _pdfService.<span class="met">ExtractImagesAsync</span>(
+    <span class="str">@"C:\docs\presentation.pdf"</span>,
+    <span class="str">@"C:\output\images\"</span>      <span class="cmt">// directory — created if needed</span>
+);
+
+<span class="kw">foreach</span> (<span class="kw">var</span> path <span class="kw">in</span> savedFiles)
+    Console.<span class="met">WriteLine</span>(<span class="str">$"Saved image: {path}"</span>);
+
+<span class="cmt">// Images saved as .png when possible, otherwise .bin</span></pre>
+      </div>
+
+      <h3>Convert PDF → Word</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="kw">byte</span>[] wordBytes = <span class="kw">await</span> _pdfService.<span class="met">ConvertPdfToWordAsync</span>(pdfBytes);
+
+<span class="kw">await</span> _pdfService.<span class="met">ConvertPdfToWordAsync</span>(<span class="str">"input.pdf"</span>, <span class="str">"output.docx"</span>);</pre>
+      </div>
+
+      <h3>Convert PDF → Excel</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="kw">byte</span>[] xlsxBytes = <span class="kw">await</span> _pdfService.<span class="met">ConvertPdfToExcelAsync</span>(pdfBytes);
+<span class="cmt">// Extracts tabular data / lines into an Excel sheet</span></pre>
+      </div>
+
+      <h3>All Methods</h3>
+      <ul class="method-list">
+        <li>ReadPdf / <span class="async-tag">Async</span> — (path) · (stream) · (bytes) → string</li>
+        <li>ExtractImages / <span class="async-tag">Async</span> — (inputPath, outputDirectory) → IList&lt;string&gt; of saved file paths</li>
+        <li>ConvertPdfToWord / <span class="async-tag">Async</span> — (path×2) · (stream×2) · (bytes) → bytes</li>
+        <li>ConvertPdfToExcel / <span class="async-tag">Async</span> — (path×2) · (stream×2) · (bytes) → bytes</li>
+      </ul>
+    </section>
+
+    <!-- ── EXCEL SERVICE ── -->
+    <section id="excel">
+      <h2><span class="icon">📊</span> IExcelService</h2>
+
+      <h3>Create an Excel File</h3>
+      <div class="callout info">
+        <span class="icon">ℹ️</span>
+        <span>Data is passed as <code>List&lt;Dictionary&lt;string, string&gt;&gt;</code>. Dictionary keys become bold header columns with a light-gray background on row 1.</span>
+      </div>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="kw">var</span> data = <span class="kw">new</span> <span class="cls">List</span>&lt;<span class="cls">Dictionary</span>&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt;&gt;
+{
+    <span class="kw">new</span>() { { <span class="str">"Name"</span>, <span class="str">"Alice"</span> }, { <span class="str">"Role"</span>, <span class="str">"Engineer"</span> }, { <span class="str">"Salary"</span>, <span class="str">"95000"</span> } },
+    <span class="kw">new</span>() { { <span class="str">"Name"</span>, <span class="str">"Bob"</span>   }, { <span class="str">"Role"</span>, <span class="str">"Designer"</span>  }, { <span class="str">"Salary"</span>, <span class="str">"88000"</span> } },
+};
+
+<span class="cmt">// File-based</span>
+<span class="kw">await</span> _excelService.<span class="met">CreateExcelAsync</span>(<span class="str">@"C:\output\team.xlsx"</span>, data);
+
+<span class="cmt">// Bytes</span>
+<span class="kw">byte</span>[] xlsxBytes = <span class="kw">await</span> _excelService.<span class="met">CreateExcelAsync</span>(data);</pre>
+      </div>
+
+      <h3>Read an Excel File</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="cls">List</span>&lt;<span class="cls">Dictionary</span>&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt;&gt; rows =
+    <span class="kw">await</span> _excelService.<span class="met">ReadExcelAsync</span>(<span class="str">@"C:\data\employees.xlsx"</span>);
+
+<span class="cmt">// First row is treated as headers (dictionary keys)</span>
+<span class="kw">foreach</span> (<span class="kw">var</span> row <span class="kw">in</span> rows)
+    Console.<span class="met">WriteLine</span>(<span class="str">$"{row["Name"]} — {row["Role"]}"</span>);</pre>
+      </div>
+
+      <h3>Template Placeholder Replacement</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span> — Replace &#123;&#123;placeholders&#125;&#125; in .xlsx cells</div>
+        <pre><span class="kw">var</span> values = <span class="kw">new</span> <span class="cls">Dictionary</span>&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt;
+{
+    { <span class="str">"ReportMonth"</span>, <span class="str">"June 2024"</span> },
+    { <span class="str">"Department"</span>,  <span class="str">"Engineering"</span> },
+};
+
+<span class="kw">byte</span>[] filled = <span class="kw">await</span> _excelService.<span class="met">ReplacePlaceholdersAsync</span>(templateBytes, values);</pre>
+      </div>
+
+      <h3>Convert Excel → PDF</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="kw">byte</span>[] pdfBytes = <span class="kw">await</span> _excelService.<span class="met">ConvertExcelToPdfAsync</span>(xlsxBytes);</pre>
+      </div>
+
+      <h3>All Methods</h3>
+      <ul class="method-list">
+        <li>CreateExcel / <span class="async-tag">Async</span> — (path, data) · (stream, data) · (data) → bytes</li>
+        <li>ReadExcel / <span class="async-tag">Async</span> — (path) · (stream) · (bytes) → List&lt;Dict&lt;string,string&gt;&gt;</li>
+        <li>ReplacePlaceholders / <span class="async-tag">Async</span> — (path×2, dict) · (stream×2, dict) · (bytes, dict) → bytes</li>
+        <li>ConvertExcelToPdf / <span class="async-tag">Async</span> — (path×2) · (stream×2) · (bytes) → bytes</li>
+      </ul>
+    </section>
+
+    <!-- ── CSV SERVICE ── -->
+    <section id="csv">
+      <h2><span class="icon">📋</span> ICsvService</h2>
+
+      <h3>Create a CSV File</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="kw">var</span> data = <span class="kw">new</span> <span class="cls">List</span>&lt;<span class="cls">Dictionary</span>&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt;&gt;
+{
+    <span class="kw">new</span>() { { <span class="str">"Product"</span>, <span class="str">"Widget A"</span> }, { <span class="str">"Price"</span>, <span class="str">"9.99"</span>  }, { <span class="str">"Stock"</span>, <span class="str">"42"</span> } },
+    <span class="kw">new</span>() { { <span class="str">"Product"</span>, <span class="str">"Widget B"</span> }, { <span class="str">"Price"</span>, <span class="str">"14.99"</span> }, { <span class="str">"Stock"</span>, <span class="str">"7"</span>  } },
+};
+
+_csvService.<span class="met">CreateCsv</span>(<span class="str">@"C:\output\products.csv"</span>, data);</pre>
+      </div>
+
+      <h3>Read a CSV File</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="cls">List</span>&lt;<span class="cls">Dictionary</span>&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt;&gt; rows =
+    _csvService.<span class="met">ReadCsv</span>(<span class="str">@"C:\data\products.csv"</span>);
+
+<span class="kw">foreach</span> (<span class="kw">var</span> row <span class="kw">in</span> rows)
+    Console.<span class="met">WriteLine</span>(<span class="str">$"{row["Product"]}: ${row["Price"]}"</span>);</pre>
+      </div>
+
+      <h3>Conversions</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="cmt">// CSV → Excel</span>
+<span class="kw">await</span> _csvService.<span class="met">ConvertCsvToExcelAsync</span>(<span class="str">"products.csv"</span>, <span class="str">"products.xlsx"</span>);
+
+<span class="cmt">// Excel → CSV</span>
+<span class="kw">await</span> _csvService.<span class="met">ConvertExcelToCsvAsync</span>(<span class="str">"report.xlsx"</span>, <span class="str">"report.csv"</span>);
+
+<span class="cmt">// CSV → PDF (via Excel intermediate)</span>
+<span class="kw">await</span> _csvService.<span class="met">ConvertCsvToPdfAsync</span>(<span class="str">"products.csv"</span>, <span class="str">"products.pdf"</span>);</pre>
+      </div>
+
+      <h3>All Methods</h3>
+      <ul class="method-list">
+        <li>CreateCsv — (path, data) — sync only</li>
+        <li>ReadCsv — (path) → List&lt;Dict&lt;string,string&gt;&gt; — sync only</li>
+        <li>ConvertCsvToExcel / <span class="async-tag">Async</span> — (inputPath, outputPath)</li>
+        <li>ConvertExcelToCsv / <span class="async-tag">Async</span> — (inputPath, outputPath)</li>
+        <li>ConvertCsvToPdf / <span class="async-tag">Async</span> — (inputPath, outputPath) — via Excel</li>
+      </ul>
+    </section>
+
+    <!-- ── HTML SERVICE ── -->
+    <section id="html">
+      <h2><span class="icon">🌐</span> IHtmlService</h2>
+
+      <h3>Read HTML Text</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="kw">string</span> text = _htmlService.<span class="met">ReadHtml</span>(<span class="str">@"C:\pages\report.html"</span>);
+<span class="cmt">// Returns plain text — all HTML tags stripped</span></pre>
+      </div>
+
+      <h3>Extract Tables from HTML</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="cls">List</span>&lt;<span class="cls">Dictionary</span>&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt;&gt; tables =
+    _htmlService.<span class="met">ExtractTables</span>(<span class="str">@"C:\pages\data.html"</span>);
+
+<span class="cmt">// First &lt;tr&gt; cells become dictionary keys (headers)</span>
+<span class="cmt">// Falls back to { "Content": rawText } if no &lt;table&gt; elements</span>
+<span class="kw">foreach</span> (<span class="kw">var</span> row <span class="kw">in</span> tables)
+    Console.<span class="met">WriteLine</span>(<span class="str">$"{row["Column1"]} | {row["Column2"]}"</span>);</pre>
+      </div>
+
+      <h3>Conversions</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="cmt">// HTML → Word (strips tags, plain text)</span>
+<span class="kw">await</span> _htmlService.<span class="met">ConvertHtmlToWordAsync</span>(<span class="str">"page.html"</span>, <span class="str">"page.docx"</span>);
+
+<span class="cmt">// HTML → PDF (via Word intermediate)</span>
+<span class="kw">await</span> _htmlService.<span class="met">ConvertHtmlToPdfAsync</span>(<span class="str">"page.html"</span>, <span class="str">"page.pdf"</span>);
+
+<span class="cmt">// HTML → Excel (extracts &lt;table&gt; elements; uses text if none)</span>
+<span class="kw">await</span> _htmlService.<span class="met">ConvertHtmlToExcelAsync</span>(<span class="str">"data.html"</span>, <span class="str">"data.xlsx"</span>);</pre>
+      </div>
+
+      <h3>All Methods</h3>
+      <ul class="method-list">
+        <li>ReadHtml — (path) → string — sync</li>
+        <li>ExtractTables — (path) → List&lt;Dict&lt;string,string&gt;&gt; — sync</li>
+        <li>ConvertHtmlToWord / <span class="async-tag">Async</span> — (inputPath, outputPath)</li>
+        <li>ConvertHtmlToPdf / <span class="async-tag">Async</span> — (inputPath, outputPath) — via Word</li>
+        <li>ConvertHtmlToExcel / <span class="async-tag">Async</span> — (inputPath, outputPath)</li>
+      </ul>
+    </section>
+
+    <!-- ── IMAGE SERVICE ── -->
+    <section id="image">
+      <h2><span class="icon">🖼</span> IImageService</h2>
+
+      <div class="callout warn">
+        <span class="icon">⚠️</span>
+        <span>OCR methods require Tesseract data files and a valid <code>OcrDataPath</code> in <code>DocFlowSettings</code>. English language pack included.</span>
+      </div>
+
+      <h3>OCR — Extract Text from Image</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="kw">string</span> ocrText = <span class="kw">await</span> _imageService.<span class="met">ReadImageTextAsync</span>(<span class="str">@"C:\scans\invoice.png"</span>);
+Console.<span class="met">WriteLine</span>(ocrText);
+<span class="cmt">// Uses Tesseract (English). OcrDataPath must be configured.</span></pre>
+      </div>
+
+      <h3>Conversions</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span></div>
+        <pre><span class="cmt">// Image → PDF  (embeds image on A4 page, 20 px margin)</span>
+<span class="kw">await</span> _imageService.<span class="met">ConvertImageToPdfAsync</span>(<span class="str">"photo.jpg"</span>, <span class="str">"photo.pdf"</span>);
+
+<span class="cmt">// Image → Word  (OCR text extraction → Word paragraph)</span>
+<span class="kw">await</span> _imageService.<span class="met">ConvertImageToWordAsync</span>(<span class="str">"scan.png"</span>, <span class="str">"scan.docx"</span>);
+
+<span class="cmt">// Image → Excel  (OCR text → rows, one line per row)</span>
+<span class="kw">await</span> _imageService.<span class="met">ConvertImageToExcelAsync</span>(<span class="str">"table_screenshot.png"</span>, <span class="str">"table.xlsx"</span>);</pre>
+      </div>
+
+      <h3>All Methods</h3>
+      <ul class="method-list">
+        <li>ReadImageText / <span class="async-tag">Async</span> — (path) → string — OCR via Tesseract</li>
+        <li>ConvertImageToPdf / <span class="async-tag">Async</span> — (inputPath, outputPath) — A4 embed, 20 px margin</li>
+        <li>ConvertImageToWord / <span class="async-tag">Async</span> — (inputPath, outputPath) — OCR → Word</li>
+        <li>ConvertImageToExcel / <span class="async-tag">Async</span> — (inputPath, outputPath) — OCR → rows</li>
+      </ul>
+    </section>
+
+    <!-- ── DEMO WORD ── -->
+    <section id="demo-word">
+      <h2><span class="icon">✏️</span> Live Demo — Create a Word Document</h2>
+      <p style="color:var(--muted);margin-bottom:20px">
+        Fill in the fields below. Click <strong>Download .docx</strong> to get a real Word document
+        generated entirely in the browser — mirroring what <code>IWordService.CreateWordAsync()</code>
+        produces on the server.
+      </p>
+
+      <div class="demo-layout">
+
+        <!-- LEFT: form -->
+        <div class="demo-form-col">
+          <div class="demo-card">
+
+            <div class="field-row">
+              <label>Document Title</label>
+              <input id="wd-title" type="text" placeholder="e.g. Project Report Q2 2024" value="Project Report Q2 2024" />
+            </div>
+
+            <div class="field-row">
+              <label>Author</label>
+              <input id="wd-author" type="text" placeholder="e.g. Dhawanil Savaliya" value="Dhawanil Savaliya" />
+            </div>
+
+            <div class="field-row">
+              <label>Body Content</label>
+              <textarea id="wd-body" rows="6" placeholder="Write your document content here...">This is the body of the document. You can add any text here.
+
+Key highlights:
+- Feature A is working correctly
+- Feature B was updated this sprint
+- Deployment is scheduled for Friday</textarea>
+            </div>
+
+            <div class="field-row">
+              <label>Include Placeholder Section?</label>
+              <label class="toggle-label">
+                <input id="wd-placeholders" type="checkbox" checked />
+                <span class="toggle-text">Yes — show ReplacePlaceholders example</span>
+              </label>
+            </div>
+
+            <button class="demo-btn" onclick="downloadWord()">
+              <span>⬇ Download .docx</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- RIGHT: code preview -->
+        <div class="demo-code-col">
+          <div class="code-wrap" style="margin-bottom:0;height:100%">
+            <div class="code-header"><span class="lang">C#</span> — Equivalent server-side code</div>
+            <pre id="wd-code-preview" style="font-size:12px"></pre>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Template replace example -->
+      <div id="wd-placeholder-section" style="margin-top:24px">
+        <h3>Template Placeholder Replacement Demo</h3>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:16px">
+          The template below uses <code>&#123;&#123;placeholder&#125;&#125;</code> tokens.
+          Fill in the values and download a filled document.
+        </p>
+
+        <div class="demo-layout">
+          <div class="demo-form-col">
+            <div class="demo-card">
+              <div class="placeholder-template-preview">
+                <div class="pt-header">Template Preview</div>
+                <div class="pt-body">
+                  Dear <span class="ph">&#123;&#123;CustomerName&#125;&#125;</span>,<br><br>
+                  Thank you for your order <span class="ph">&#123;&#123;OrderNumber&#125;&#125;</span> placed on <span class="ph">&#123;&#123;OrderDate&#125;&#125;</span>.<br>
+                  Your total is <span class="ph">&#123;&#123;TotalAmount&#125;&#125;</span> and it will be shipped to <span class="ph">&#123;&#123;ShippingAddress&#125;&#125;</span>.<br><br>
+                  Best regards,<br>
+                  DocFlow Team
+                </div>
+              </div>
+
+              <div class="ph-fields" id="ph-fields">
+                <div class="field-row"><label>CustomerName</label><input class="ph-input" data-key="CustomerName" type="text" value="Acme Corp" /></div>
+                <div class="field-row"><label>OrderNumber</label><input class="ph-input" data-key="OrderNumber" type="text" value="ORD-2024-001" /></div>
+                <div class="field-row"><label>OrderDate</label><input class="ph-input" data-key="OrderDate" type="text" value="June 10, 2024" /></div>
+                <div class="field-row"><label>TotalAmount</label><input class="ph-input" data-key="TotalAmount" type="text" value="$4,500.00" /></div>
+                <div class="field-row"><label>ShippingAddress</label><input class="ph-input" data-key="ShippingAddress" type="text" value="123 Main St, New York, NY" /></div>
+              </div>
+
+              <button class="demo-btn secondary" onclick="downloadWordTemplate()">
+                <span>⬇ Download Filled .docx</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="demo-code-col">
+            <div class="code-wrap" style="margin-bottom:0">
+              <div class="code-header"><span class="lang">C#</span> — ReplacePlaceholders</div>
+              <pre><span class="kw">var</span> placeholders = <span class="kw">new</span> <span class="cls">Dictionary</span>&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt;
+{
+    { <span class="str">"CustomerName"</span>,    <span class="str">"Acme Corp"</span>             },
+    { <span class="str">"OrderNumber"</span>,     <span class="str">"ORD-2024-001"</span>          },
+    { <span class="str">"OrderDate"</span>,       <span class="str">"June 10, 2024"</span>         },
+    { <span class="str">"TotalAmount"</span>,     <span class="str">"$4,500.00"</span>             },
+    { <span class="str">"ShippingAddress"</span>, <span class="str">"123 Main St, NY"</span>       },
+};
+
+<span class="cmt">// File-based</span>
+<span class="kw">await</span> _wordService.<span class="met">ReplacePlaceholdersAsync</span>(
+    <span class="str">"letter_template.docx"</span>,
+    <span class="str">"letter_acme.docx"</span>,
+    placeholders
+);
+
+<span class="cmt">// Bytes-based (e.g. from DB / Azure Blob)</span>
+<span class="kw">byte</span>[] filled = <span class="kw">await</span> _wordService
+    .<span class="met">ReplacePlaceholdersAsync</span>(templateBytes, placeholders);</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── DEMO EXCEL ── -->
+    <section id="demo-excel">
+      <h2><span class="icon">📊</span> Live Demo — Create an Excel File</h2>
+      <p style="color:var(--muted);margin-bottom:20px">
+        Build a spreadsheet row by row — or import JSON / CSV directly. Click <strong>Download .xlsx</strong>
+        to get a real Excel file mirroring <code>IExcelService.CreateExcelAsync()</code>
+        (bold headers, light-gray background, auto column widths).
+      </p>
+
+      <div class="demo-layout" style="align-items:stretch">
+        <!-- LEFT: form -->
+        <div class="demo-form-col" style="flex:1.3">
+          <div class="demo-card" style="height:100%">
+
+            <div class="field-row">
+              <label>Sheet / Document Name</label>
+              <input id="xl-sheetname" type="text" value="Employee Report" />
+            </div>
+
+            <div class="field-row">
+              <label>Column Headers <span style="color:var(--muted);font-weight:400;font-size:11px">(comma-separated)</span></label>
+              <input id="xl-headers" type="text" value="Name, Department, Role, Salary, Start Date" />
+            </div>
+
+            <!-- JSON / CSV import panel -->
+            <div class="import-panel">
+              <div class="import-toggle" onclick="toggleImport()">
+                <span>⬆ Import JSON or CSV</span>
+                <span id="import-arrow">▸</span>
+              </div>
+              <div class="import-body" id="import-body">
+                <div class="import-tabs">
+                  <button class="import-tab active" onclick="setImportTab('json',this)">JSON</button>
+                  <button class="import-tab" onclick="setImportTab('csv',this)">CSV</button>
+                </div>
+                <textarea id="import-textarea" rows="4" placeholder='[{"Name":"Alice","Department":"Eng"}]'></textarea>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                  <button class="demo-btn secondary" style="font-size:11px;padding:6px 12px" onclick="applyImport()">Apply</button>
+                  <button class="demo-btn secondary" style="font-size:11px;padding:6px 12px" onclick="pasteJsonSample()">Load sample</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <label>Rows</label>
+              <div id="xl-rows-container"></div>
+              <button class="add-row-btn" onclick="addExcelRow()">+ Add Row</button>
+            </div>
+
+            <div class="demo-btn-row">
+              <button class="demo-btn" onclick="downloadExcel()">⬇ Download .xlsx</button>
+              <button class="demo-btn secondary" onclick="resetExcelRows()">↺ Reset</button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RIGHT: tabbed preview / code -->
+        <div class="demo-code-col" style="flex:1.7;display:flex;flex-direction:column;gap:12px">
+          <!-- Live preview table -->
+          <div class="demo-card" style="padding:0;overflow:hidden;flex:1">
+            <div class="xl-preview-header">
+              <span id="xl-sheetname-label">Employee Report</span>
+              <span style="color:var(--muted);font-size:11px">Live Preview</span>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="xl-preview-table" id="xl-preview-table">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <!-- Code preview -->
+          <div class="code-wrap" style="margin-bottom:0;flex:1">
+            <div class="code-header"><span class="lang">C#</span> — Equivalent code</div>
+            <pre id="xl-code-preview"></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Excel template replace demo -->
+      <div style="margin-top:28px">
+        <h3>Excel Template Replacement Demo</h3>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:16px">
+          Fill values — the live preview updates instantly. Click download to get a populated .xlsx.
+        </p>
+        <div class="demo-layout">
+          <div class="demo-form-col">
+            <div class="demo-card">
+              <div class="ph-fields">
+                <div class="field-row"><label>ReportTitle</label><input class="xl-ph-input" data-key="ReportTitle" type="text" value="Q2 2024 Sales Report" /></div>
+                <div class="field-row"><label>GeneratedBy</label><input class="xl-ph-input" data-key="GeneratedBy" type="text" value="Dhawanil Savaliya" /></div>
+                <div class="field-row"><label>Period</label><input class="xl-ph-input" data-key="Period" type="text" value="April – June 2024" /></div>
+                <div class="field-row"><label>Department</label><input class="xl-ph-input" data-key="Department" type="text" value="Engineering" /></div>
+                <div class="field-row"><label>TotalRecords</label><input class="xl-ph-input" data-key="TotalRecords" type="text" value="1,284" /></div>
+              </div>
+              <button class="demo-btn secondary" onclick="downloadExcelTemplate()">⬇ Download Filled .xlsx</button>
+            </div>
+          </div>
+
+          <div class="demo-code-col">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <!-- Live filled preview -->
+              <div class="template-live-preview">
+                <div class="tlp-header">
+                  <span>Filled Preview</span>
+                  <span style="color:var(--green);font-size:10px">● live</span>
+                </div>
+                <div class="tlp-body" id="xl-template-live">
+                  <table class="xl-template-table" style="width:100%">
+                    <tbody id="xl-tpl-preview-body"></tbody>
+                  </table>
+                </div>
+              </div>
+              <!-- Code -->
+              <div class="code-wrap" style="margin-bottom:0">
+                <div class="code-header"><span class="lang">C#</span> — ReplacePlaceholders</div>
+                <pre><span class="kw">var</span> placeholders = <span class="kw">new</span> <span class="cls">Dictionary</span>&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt;
+{
+    { <span class="str">"ReportTitle"</span>,  <span class="str">"Q2 2024 Sales Report"</span> },
+    { <span class="str">"GeneratedBy"</span>,  <span class="str">"Dhawanil Savaliya"</span>    },
+    { <span class="str">"Period"</span>,        <span class="str">"April – June 2024"</span>   },
+    { <span class="str">"Department"</span>,   <span class="str">"Engineering"</span>          },
+    { <span class="str">"TotalRecords"</span>, <span class="str">"1,284"</span>                },
+};
+
+<span class="kw">byte</span>[] filled = <span class="kw">await</span> _excelService
+    .<span class="met">ReplacePlaceholdersAsync</span>(templateBytes, placeholders);</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── DEMO CONVERT ── -->
+    <section id="demo-convert">
+      <h2><span class="icon">🔄</span> Live Demo — Convert Formats</h2>
+      <p style="color:var(--muted);margin-bottom:20px">
+        Type or paste content, choose source and target format, and download the converted file.
+        Mirrors <code>IConversionService.ConvertAsync(from, to, bytes)</code>.
+      </p>
+
+      <div class="demo-card" style="max-width:900px">
+        <div class="format-grid">
+          <div class="field-row">
+            <label>From</label>
+            <select class="format-select" id="conv-from" onchange="onConvFormatChange()">
+              <option value="text">Plain Text</option>
+              <option value="csv">CSV</option>
+              <option value="html">HTML</option>
+              <option value="json">JSON array</option>
+            </select>
+          </div>
+          <button class="arrow-btn" onclick="swapConvFormats()">⇄</button>
+          <div class="field-row">
+            <label>To</label>
+            <select class="format-select" id="conv-to" onchange="onConvFormatChange()">
+              <option value="word">Word (.docx)</option>
+              <option value="excel">Excel (.xlsx)</option>
+              <option value="csv">CSV (.csv)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label id="conv-input-label">Input Content</label>
+          <textarea id="conv-input" rows="7" placeholder="Paste your content here..."></textarea>
+        </div>
+
+        <div id="conv-note" class="convert-note" style="display:none"></div>
+
+        <div class="demo-btn-row" style="margin-top:4px">
+          <button class="demo-btn" onclick="runConvert()">⬇ Convert &amp; Download</button>
+          <button class="demo-btn secondary" onclick="loadConvSample()">Load sample</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── DEMO READ ── -->
+    <section id="demo-read">
+      <h2><span class="icon">📂</span> Live Demo — Read &amp; Extract</h2>
+      <p style="color:var(--muted);margin-bottom:20px">
+        Upload a file to extract its content in the browser — mirroring
+        <code>ReadWordAsync()</code>, <code>ReadExcelAsync()</code>, <code>ReadCsv()</code>, and <code>ReadHtml()</code>.
+      </p>
+
+      <div class="demo-layout">
+        <div class="demo-form-col">
+          <label class="dropzone" id="read-dropzone">
+            <input type="file" id="read-file-input" accept=".docx,.xlsx,.csv,.html,.htm,.txt" onchange="handleReadFile(this.files[0])" />
+            <div class="dz-icon">📄</div>
+            <div class="dz-text">
+              <strong>Click to upload</strong> or drag &amp; drop<br/>
+              .docx · .xlsx · .csv · .html · .txt
+            </div>
+          </label>
+
+          <div id="read-file-info" style="display:none;margin-top:12px">
+            <span class="read-stat" id="read-stat-name"></span>
+            <span class="read-stat" id="read-stat-size"></span>
+            <span class="read-stat" id="read-stat-type"></span>
+          </div>
+
+          <div class="code-wrap" style="margin-top:16px;margin-bottom:0">
+            <div class="code-header"><span class="lang">C#</span> — Equivalent code</div>
+            <pre id="read-code-preview" style="font-size:12px"><span class="cmt">// Upload a file above to see the equivalent C# code</span></pre>
+          </div>
+        </div>
+
+        <div class="demo-code-col">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;height:100%">
+            <div class="xl-preview-header" style="justify-content:space-between">
+              <span>Extracted Content</span>
+              <span id="read-output-badge" style="font-size:11px;color:var(--muted)">No file loaded</span>
+            </div>
+            <div id="read-output-wrap" style="padding:16px;overflow:auto;max-height:500px">
+              <div style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0">
+                Upload a file to see its extracted content here
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SETTINGS ── -->
+    <section id="settings">
+      <h2><span class="icon">⚙️</span> DocFlowSettings</h2>
+
+      <div class="settings-grid">
+        <div class="setting-card">
+          <div class="prop">TempDirectory</div>
+          <div class="type">string</div>
+          <div class="desc">Custom temp folder for intermediate files. Auto-created if missing.</div>
+          <div class="default">Default: system temp dir</div>
+        </div>
+        <div class="setting-card">
+          <div class="prop">OcrDataPath</div>
+          <div class="type">string</div>
+          <div class="desc">Absolute path to Tesseract language data files. Required for any OCR operation.</div>
+          <div class="default">Default: null (OCR disabled)</div>
+        </div>
+        <div class="setting-card">
+          <div class="prop">MaxFileSizeBytes</div>
+          <div class="type">long</div>
+          <div class="desc">Maximum allowed input file size. Files exceeding this return FileTooLarge error code.</div>
+          <div class="default">Default: 25,000,000 (25 MB)</div>
+        </div>
+        <div class="setting-card">
+          <div class="prop">LoggingEnabled</div>
+          <div class="type">bool</div>
+          <div class="desc">Enable/disable internal debug, info, warning, and error logging.</div>
+          <div class="default">Default: true</div>
+        </div>
+        <div class="setting-card">
+          <div class="prop">AllowOverwrite</div>
+          <div class="type">bool</div>
+          <div class="desc">If false, writing to an existing output path returns OutputAlreadyExists error.</div>
+          <div class="default">Default: false</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span> — Factory default</div>
+        <pre><span class="kw">var</span> defaults = <span class="cls">DocFlowSettings</span>.<span class="met">CreateDefault</span>();
+<span class="cmt">// MaxFileSizeBytes = 25_000_000, LoggingEnabled = true,</span>
+<span class="cmt">// AllowOverwrite = false, TempDirectory = Path.GetTempPath()</span></pre>
+      </div>
+    </section>
+
+    <!-- ── ERROR CODES ── -->
+    <section id="errors">
+      <h2><span class="icon">🚨</span> Error Codes (ConversionErrorCode)</h2>
+
+      <div class="error-grid">
+        <div class="error-card ok">
+          <div class="code-num">0</div>
+          <div class="code-name">None</div>
+          <div class="code-desc">Operation succeeded. result.Success == true.</div>
+        </div>
+        <div class="error-card warn">
+          <div class="code-num">1</div>
+          <div class="code-name">ValidationFailed</div>
+          <div class="code-desc">General input validation failed.</div>
+        </div>
+        <div class="error-card err">
+          <div class="code-num">2</div>
+          <div class="code-name">FileNotFound</div>
+          <div class="code-desc">Input file path does not exist on disk.</div>
+        </div>
+        <div class="error-card err">
+          <div class="code-num">3</div>
+          <div class="code-name">InvalidFileType</div>
+          <div class="code-desc">File extension doesn't match declared DocumentType.</div>
+        </div>
+        <div class="error-card err">
+          <div class="code-num">4</div>
+          <div class="code-name">FileTooLarge</div>
+          <div class="code-desc">Input exceeds MaxFileSizeBytes.</div>
+        </div>
+        <div class="error-card warn">
+          <div class="code-num">5</div>
+          <div class="code-name">OutputAlreadyExists</div>
+          <div class="code-desc">Output path exists and AllowOverwrite is false.</div>
+        </div>
+        <div class="error-card err">
+          <div class="code-num">6</div>
+          <div class="code-name">UnsupportedConversion</div>
+          <div class="code-desc">No implementation for this source → target pair.</div>
+        </div>
+        <div class="error-card err">
+          <div class="code-num">7</div>
+          <div class="code-name">ProcessingFailed</div>
+          <div class="code-desc">Unexpected error during processing.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── RESULT ── -->
+    <section id="result">
+      <h2><span class="icon">📦</span> ConversionResult</h2>
+      <p style="color:var(--muted);margin-bottom:20px">
+        Returned by all <code>IConversionService</code> overloads. Inspect <code>Success</code> first,
+        then branch on <code>ErrorCode</code> for recoverable errors.
+      </p>
+
+      <table class="overload-table">
+        <thead>
+          <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Success</td><td>bool</td><td>true when the conversion completed without errors</td></tr>
+          <tr><td>ErrorCode</td><td>ConversionErrorCode</td><td>Reason for failure (None = 0 on success)</td></tr>
+          <tr><td>SourceType</td><td>DocumentType</td><td>Input document type enum value</td></tr>
+          <tr><td>TargetType</td><td>DocumentType</td><td>Output document type enum value</td></tr>
+          <tr><td>Message</td><td>string</td><td>Human-readable success or error message</td></tr>
+          <tr><td>OutputPath</td><td>string?</td><td>Populated for file-path overloads</td></tr>
+          <tr><td>OutputBytes</td><td>byte[]?</td><td>Populated for byte-array overloads</td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-wrap">
+        <div class="code-header"><span class="lang">C#</span> — Handling all error cases</div>
+        <pre><span class="kw">var</span> result = <span class="kw">await</span> _conversionService.<span class="met">ConvertAsync</span>(
+    <span class="cls">DocumentType</span>.Pdf, <span class="cls">DocumentType</span>.Excel, inputBytes
+);
+
+<span class="kw">switch</span> (result.ErrorCode)
+{
+    <span class="kw">case</span> <span class="cls">ConversionErrorCode</span>.None:
+        <span class="kw">return</span> <span class="met">File</span>(result.OutputBytes, <span class="str">"application/vnd.openxmlformats..."</span>);
+
+    <span class="kw">case</span> <span class="cls">ConversionErrorCode</span>.FileTooLarge:
+        <span class="kw">return</span> <span class="met">BadRequest</span>(<span class="str">"File exceeds 25 MB limit."</span>);
+
+    <span class="kw">case</span> <span class="cls">ConversionErrorCode</span>.OutputAlreadyExists:
+        <span class="kw">return</span> <span class="met">Conflict</span>(<span class="str">"Output file already exists."</span>);
+
+    <span class="kw">case</span> <span class="cls">ConversionErrorCode</span>.UnsupportedConversion:
+        <span class="kw">return</span> <span class="met">BadRequest</span>(<span class="str">"Conversion not supported."</span>);
+
+    <span class="kw">default</span>:
+        <span class="kw">return</span> <span class="met">StatusCode</span>(<span class="num">500</span>, result.Message);
+}</pre>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+<script src="https://unpkg.com/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<script>
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+
+function showToast(msg, type = 'success') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type !== 'success' ? ' ' + type : '');
+  const icon = type === 'error' ? '✕' : type === 'info' ? 'ℹ' : '✓';
+  t.innerHTML = `<span>${icon}</span> ${msg}`;
+  c.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('leaving');
+    t.addEventListener('animationend', () => t.remove(), { once: true });
+  }, 3000);
+}
+
+// ═══════════════════════════════════════════════
+// COPY BUTTONS — injected into every .code-header
+// ═══════════════════════════════════════════════
+
+function initCopyButtons() {
+  document.querySelectorAll('.code-header').forEach(header => {
+    if (header.querySelector('.copy-btn')) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'Copy';
+    btn.onclick = () => {
+      const pre = header.nextElementSibling;
+      if (!pre) return;
+      navigator.clipboard.writeText(pre.innerText).then(() => {
+        btn.textContent = '✓ Copied';
+        btn.classList.add('copied');
+        showToast('Code copied to clipboard', 'info');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    };
+    header.appendChild(btn);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// THEME TOGGLE
+// ═══════════════════════════════════════════════
+
+function initThemeToggle() {
+  const cb  = document.getElementById('theme-toggle-cb');
+  const lbl = document.getElementById('theme-label');
+  cb.addEventListener('change', () => {
+    document.body.classList.toggle('light', cb.checked);
+    lbl.textContent = cb.checked ? 'Dark mode' : 'Light mode';
+    // Re-inject copy buttons in case new code-headers appeared
+    initCopyButtons();
+  });
+}
+
+// ═══════════════════════════════════════════════
+// WORD DEMO
+// ═══════════════════════════════════════════════
+
+function updateWordCodePreview() {
+  const title  = (document.getElementById('wd-title').value  || 'Untitled').replace(/"/g, '\\"');
+  const author = (document.getElementById('wd-author').value || 'Author').replace(/"/g, '\\"');
+  const bodyRaw = document.getElementById('wd-body').value || '';
+  const sample  = bodyRaw.replace(/"/g, '\\"').replace(/\n/g, '\\n').substring(0, 65);
+  const ellipsis = bodyRaw.length > 65 ? '...' : '';
+  document.getElementById('wd-code-preview').innerHTML =
+`<span class="kw">string</span> content = <span class="str">"${sample}${ellipsis}"</span>;
+
+<span class="cmt">// File-based</span>
+<span class="kw">await</span> _wordService.<span class="met">CreateWordAsync</span>(
+    <span class="str">"${title}.docx"</span>, content
+);
+
+<span class="cmt">// Bytes-based (stream to HTTP response)</span>
+<span class="kw">byte</span>[] docBytes =
+    <span class="kw">await</span> _wordService.<span class="met">CreateWordAsync</span>(content);
+
+<span class="cmt">// Stream-based</span>
+<span class="kw">using var</span> ms = <span class="kw">new</span> <span class="cls">MemoryStream</span>();
+<span class="kw">await</span> _wordService.<span class="met">CreateWordAsync</span>(ms, content);
+
+<span class="cmt">// Read back</span>
+<span class="kw">string</span> text = <span class="kw">await</span> _wordService
+    .<span class="met">ReadWordAsync</span>(<span class="str">"${title}.docx"</span>);`;
+}
+
+async function downloadWord() {
+  const title  = document.getElementById('wd-title').value  || 'Document';
+  const author = document.getElementById('wd-author').value || '';
+  const body   = document.getElementById('wd-body').value   || '';
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = docx;
+  const paras = [
+    new Paragraph({ text: title, heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER, spacing: { after: 200 } }),
+  ];
+  if (author) paras.push(new Paragraph({
+    children: [new TextRun({ text: `Author: ${author}`, italics: true, color: '666666', size: 22 })],
+    alignment: AlignmentType.CENTER, spacing: { after: 400 },
+  }));
+  body.split('\n').forEach(line => paras.push(new Paragraph({
+    children: [new TextRun({ text: line || ' ', size: 24 })], spacing: { after: 160 },
+  })));
+  const doc = new Document({ creator: author || 'DocFlow', title, sections: [{ properties: {}, children: paras }] });
+  const blob = await Packer.toBlob(doc);
+  const fname = sanitizeFilename(title) + '.docx';
+  triggerDownload(blob, fname);
+  showToast(`Downloaded ${fname}`);
+}
+
+async function downloadWordTemplate() {
+  const vals = {};
+  document.querySelectorAll('.ph-input').forEach(el => { vals[el.dataset.key] = el.value; });
+  const { Document, Packer, Paragraph, TextRun } = docx;
+  const text = `Dear ${vals.CustomerName},\n\nThank you for your order ${vals.OrderNumber} placed on ${vals.OrderDate}.\nYour total is ${vals.TotalAmount} and it will be shipped to ${vals.ShippingAddress}.\n\nBest regards,\nDocFlow Team`;
+  const paras = [
+    new Paragraph({ children: [new TextRun({ text: 'Order Confirmation', bold: true, size: 32 })], spacing: { after: 400 } }),
+    ...text.split('\n').map(l => new Paragraph({ children: [new TextRun({ text: l || ' ', size: 24 })], spacing: { after: 160 } })),
+  ];
+  const doc = new Document({ sections: [{ properties: {}, children: paras }] });
+  const blob = await Packer.toBlob(doc);
+  const fname = `order_${vals.OrderNumber || 'template'}.docx`;
+  triggerDownload(blob, fname);
+  showToast(`Downloaded ${fname}`);
+}
+
+// update word template live preview
+function updateWordTemplateLivePreview() {
+  const vals = {};
+  document.querySelectorAll('.ph-input').forEach(el => { vals[el.dataset.key] = el.value || `{{${el.dataset.key}}}`; });
+  const el = document.getElementById('wd-tpl-live');
+  if (!el) return;
+  el.innerHTML = `Dear <span class="tlp-val">${esc(vals.CustomerName)}</span>,<br><br>
+Thank you for your order <span class="tlp-val">${esc(vals.OrderNumber)}</span> placed on <span class="tlp-val">${esc(vals.OrderDate)}</span>.<br>
+Your total is <span class="tlp-val">${esc(vals.TotalAmount)}</span> and it will be shipped to <span class="tlp-val">${esc(vals.ShippingAddress)}</span>.<br><br>
+Best regards,<br>DocFlow Team`;
+}
+
+// ═══════════════════════════════════════════════
+// EXCEL DEMO
+// ═══════════════════════════════════════════════
+
+const SAMPLE_ROWS = [
+  ['Alice Johnson',  'Engineering', 'Senior Dev',   '$95,000', '2020-03-15'],
+  ['Bob Martinez',   'Design',      'UX Lead',      '$88,000', '2021-07-01'],
+  ['Carol White',    'Engineering', 'Backend Dev',  '$82,000', '2022-01-10'],
+  ['David Kim',      'Marketing',   'Campaign Mgr', '$74,000', '2019-11-05'],
+  ['Eva Patel',      'Engineering', 'QA Engineer',  '$78,000', '2023-02-20'],
+];
+
+function getHeaders() {
+  return document.getElementById('xl-headers').value
+    .split(',').map(h => h.trim()).filter(Boolean);
+}
+
+function addExcelRow(values = []) {
+  const headers   = getHeaders();
+  const container = document.getElementById('xl-rows-container');
+  const wrap      = document.createElement('div');
+  wrap.className  = 'xl-row-input';
+  headers.forEach((_, i) => {
+    const inp = document.createElement('input');
+    inp.type  = 'text';
+    inp.placeholder = `Col ${i + 1}`;
+    inp.value = values[i] !== undefined ? values[i] : '';
+    inp.addEventListener('input', refreshExcelPreview);
+    wrap.appendChild(inp);
+  });
+  const del = document.createElement('button');
+  del.className = 'del-btn';
+  del.textContent = '×';
+  del.title = 'Remove row';
+  del.onclick = () => { wrap.remove(); refreshExcelPreview(); };
+  wrap.appendChild(del);
+  container.appendChild(wrap);
+  refreshExcelPreview();
+}
+
+function resetExcelRows() {
+  document.getElementById('xl-rows-container').innerHTML = '';
+  SAMPLE_ROWS.forEach(r => addExcelRow(r));
+}
+
+function getExcelData() {
+  const headers = getHeaders();
+  const rows = [];
+  document.querySelectorAll('#xl-rows-container .xl-row-input').forEach(wrap => {
+    const inputs = wrap.querySelectorAll('input');
+    const row = {};
+    headers.forEach((h, i) => { row[h] = inputs[i] ? inputs[i].value : ''; });
+    rows.push(row);
+  });
+  return { headers, rows };
+}
+
+function refreshExcelPreview() {
+  const { headers, rows } = getExcelData();
+  const sheetName = document.getElementById('xl-sheetname').value || 'Sheet';
+  document.getElementById('xl-sheetname-label').textContent = sheetName;
+  const table = document.getElementById('xl-preview-table');
+  table.querySelector('thead').innerHTML = '<tr>' + headers.map(h => `<th>${esc(h)}</th>`).join('') + '</tr>';
+  table.querySelector('tbody').innerHTML = rows.map(row =>
+    '<tr>' + headers.map(h => `<td>${esc(row[h] || '')}</td>`).join('') + '</tr>'
+  ).join('');
+  updateExcelCodePreview(headers, rows, sheetName);
+}
+
+function updateExcelCodePreview(headers, rows, sheetName) {
+  const dictLines = headers.map(h => `    { <span class="str">"${esc(h)}"</span>, <span class="str">"..."</span> }`).join(',\n');
+  const sample = rows[0] ? headers.map(h => `    { <span class="str">"${esc(h)}"</span>, <span class="str">"${esc(rows[0][h] || '')}"</span> }`).join(',\n') : dictLines;
+  document.getElementById('xl-code-preview').innerHTML =
+`<span class="kw">var</span> data = <span class="kw">new</span> <span class="cls">List</span>&lt;<span class="cls">Dictionary</span>&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt;&gt;
+{
+    <span class="kw">new</span>() {
+${sample}
+    },
+    <span class="cmt">// ... ${rows.length} row${rows.length !== 1 ? 's' : ''} total</span>
+};
+
+<span class="cmt">// File-based</span>
+<span class="kw">await</span> _excelService.<span class="met">CreateExcelAsync</span>(
+    <span class="str">"${esc(sheetName)}.xlsx"</span>, data
+);
+
+<span class="cmt">// Bytes-based</span>
+<span class="kw">byte</span>[] bytes = <span class="kw">await</span> _excelService
+    .<span class="met">CreateExcelAsync</span>(data);
+
+<span class="cmt">// Read back</span>
+<span class="kw">var</span> rows = <span class="kw">await</span> _excelService
+    .<span class="met">ReadExcelAsync</span>(<span class="str">"${esc(sheetName)}.xlsx"</span>);`;
+}
+
+function updateExcelTemplateLivePreview() {
+  const KEYS = ['ReportTitle','GeneratedBy','Period','Department','TotalRecords'];
+  const tbody = document.getElementById('xl-tpl-preview-body');
+  if (!tbody) return;
+  tbody.innerHTML = KEYS.map(k => {
+    const inp = document.querySelector(`.xl-ph-input[data-key="${k}"]`);
+    const val = inp ? inp.value : '';
+    return `<tr><td class="cell-label">${k}</td><td class="cell-ph"><span class="tlp-val">${esc(val)}</span></td></tr>`;
+  }).join('');
+}
+
+function downloadExcel() {
+  const { headers, rows } = getExcelData();
+  const sheetName = (document.getElementById('xl-sheetname').value || 'Sheet').substring(0, 31);
+  const wsData = [headers, ...rows.map(r => headers.map(h => r[h] || ''))];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let C = range.s.c; C <= range.e.c; C++) {
+    const cell = ws[XLSX.utils.encode_cell({ r: 0, c: C })];
+    if (cell) cell.s = { font: { bold: true }, fill: { fgColor: { rgb: 'CBD5E1' } }, alignment: { horizontal: 'center' } };
+  }
+  ws['!cols'] = headers.map(h => ({ wch: Math.min(Math.max(h.length, ...rows.map(r => (r[h]||'').length)) + 4, 40) }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  const fname = sanitizeFilename(sheetName) + '.xlsx';
+  XLSX.writeFile(wb, fname);
+  showToast(`Downloaded ${fname}`);
+}
+
+function downloadExcelTemplate() {
+  const vals = {};
+  document.querySelectorAll('.xl-ph-input').forEach(el => { vals[el.dataset.key] = el.value; });
+  const wsData = [['Field', 'Value'], ...Object.entries(vals)];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  ['A1','B1'].forEach(a => { if (ws[a]) ws[a].s = { font: { bold: true }, fill: { fgColor: { rgb: 'CBD5E1' } } }; });
+  ws['!cols'] = [{ wch: 20 }, { wch: 40 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Report Summary');
+  XLSX.writeFile(wb, 'report_filled.xlsx');
+  showToast('Downloaded report_filled.xlsx');
+}
+
+// ═══════════════════════════════════════════════
+// JSON / CSV IMPORT PANEL
+// ═══════════════════════════════════════════════
+
+let _importMode = 'json';
+
+function toggleImport() {
+  const body  = document.getElementById('import-body');
+  const arrow = document.getElementById('import-arrow');
+  const open  = body.classList.toggle('open');
+  arrow.textContent = open ? '▾' : '▸';
+}
+
+function setImportTab(mode, btn) {
+  _importMode = mode;
+  document.querySelectorAll('.import-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const ta = document.getElementById('import-textarea');
+  ta.placeholder = mode === 'json'
+    ? '[{"Name":"Alice","Dept":"Eng"},{"Name":"Bob","Dept":"Design"}]'
+    : 'Name,Department,Salary\nAlice,Engineering,95000\nBob,Design,88000';
+}
+
+function pasteJsonSample() {
+  const ta = document.getElementById('import-textarea');
+  if (_importMode === 'json') {
+    ta.value = JSON.stringify([
+      { Name: 'Alice Johnson', Department: 'Engineering', Role: 'Senior Dev',   Salary: '$95,000', 'Start Date': '2020-03-15' },
+      { Name: 'Bob Martinez',  Department: 'Design',      Role: 'UX Lead',      Salary: '$88,000', 'Start Date': '2021-07-01' },
+      { Name: 'Carol White',   Department: 'Engineering', Role: 'Backend Dev',  Salary: '$82,000', 'Start Date': '2022-01-10' },
+    ], null, 2);
+  } else {
+    ta.value = 'Name,Department,Role,Salary,Start Date\nAlice Johnson,Engineering,Senior Dev,$95000,2020-03-15\nBob Martinez,Design,UX Lead,$88000,2021-07-01';
+  }
+}
+
+function applyImport() {
+  const raw = document.getElementById('import-textarea').value.trim();
+  if (!raw) { showToast('Paste some data first', 'error'); return; }
+  try {
+    let rows = [];
+    if (_importMode === 'json') {
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) throw new Error('Must be a JSON array');
+      rows = parsed;
+      const allKeys = [...new Set(rows.flatMap(r => Object.keys(r)))];
+      document.getElementById('xl-headers').value = allKeys.join(', ');
+      document.getElementById('xl-rows-container').innerHTML = '';
+      rows.forEach(r => addExcelRow(allKeys.map(k => r[k] !== undefined ? String(r[k]) : '')));
+    } else {
+      const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+      const headers = parseCsvLine(lines[0]);
+      document.getElementById('xl-headers').value = headers.join(', ');
+      document.getElementById('xl-rows-container').innerHTML = '';
+      lines.slice(1).forEach(line => addExcelRow(parseCsvLine(line)));
+    }
+    showToast(`Imported ${document.querySelectorAll('#xl-rows-container .xl-row-input').length} rows`);
+    toggleImport();
+  } catch(e) {
+    showToast('Parse error: ' + e.message, 'error');
+  }
+}
+
+function parseCsvLine(line) {
+  const result = [], re = /(?:"([^"]*(?:""[^"]*)*)"|([^,]*))(?:,|$)/g;
+  let m;
+  while ((m = re.exec(line)) !== null) {
+    if (m.index === re.lastIndex && m[0] === '') break;
+    result.push(m[1] !== undefined ? m[1].replace(/""/g, '"') : (m[2] || ''));
+  }
+  if (line.endsWith(',')) result.pop();
+  return result;
+}
+
+// ═══════════════════════════════════════════════
+// CONVERT DEMO
+// ═══════════════════════════════════════════════
+
+const CONV_SAMPLES = {
+  text: 'Project Update — June 2024\n\nThe team completed Sprint 12 this week.\n\nHighlights:\n- Auth service refactored\n- API latency down 40%\n- QA signed off on release candidate',
+  csv:  'Name,Department,Salary\nAlice,Engineering,95000\nBob,Design,88000\nCarol,Marketing,74000\nDavid,Engineering,91000',
+  html: '<h1>Q2 Report</h1><p>Revenue grew by <strong>18%</strong> this quarter.</p><ul><li>New customers: 142</li><li>Churn rate: 2.1%</li><li>NPS score: 67</li></ul>',
+  json: '[{"Name":"Alice","Role":"Engineer","Level":"Senior","Salary":"95000"},{"Name":"Bob","Role":"Designer","Level":"Lead","Salary":"88000"},{"Name":"Carol","Role":"Manager","Level":"Director","Salary":"110000"}]',
+};
+
+function onConvFormatChange() {
+  const from = document.getElementById('conv-from').value;
+  const to   = document.getElementById('conv-to').value;
+  const note = document.getElementById('conv-note');
+  const labels = { text:'Plain Text', csv:'CSV', html:'HTML', json:'JSON Array', word:'Word (.docx)', excel:'Excel (.xlsx)', csv2:'CSV (.csv)' };
+  const unsupported = (from === 'html' && to === 'csv');
+  note.style.display = unsupported ? '' : 'none';
+  if (unsupported) note.innerHTML = '<strong>Note:</strong> HTML → CSV is not directly supported by DocFlow. Use HTML → Excel → CSV on the server.';
+  document.getElementById('conv-input-label').textContent = `Input — ${from.toUpperCase()} content`;
+}
+
+function loadConvSample() {
+  const from = document.getElementById('conv-from').value;
+  document.getElementById('conv-input').value = CONV_SAMPLES[from] || '';
+  showToast('Sample data loaded', 'info');
+}
+
+async function runConvert() {
+  const from  = document.getElementById('conv-from').value;
+  const to    = document.getElementById('conv-to').value;
+  const input = document.getElementById('conv-input').value.trim();
+  if (!input) { showToast('Paste some input content first', 'error'); return; }
+
+  try {
+    if (to === 'word') {
+      await convertToWord(from, input);
+    } else if (to === 'excel') {
+      convertToExcel(from, input);
+    } else if (to === 'csv') {
+      convertToCsv(from, input);
+    }
+  } catch(e) {
+    showToast('Conversion error: ' + e.message, 'error');
+  }
+}
+
+async function convertToWord(from, input) {
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel } = docx;
+  let lines = [];
+  if (from === 'html') {
+    const div = document.createElement('div');
+    div.innerHTML = input;
+    lines = (div.textContent || '').split('\n').map(l => l.trim()).filter(Boolean);
+  } else if (from === 'csv') {
+    lines = input.split('\n');
+  } else if (from === 'json') {
+    const arr = JSON.parse(input);
+    lines = arr.map(r => Object.entries(r).map(([k,v]) => `${k}: ${v}`).join(' | '));
+  } else {
+    lines = input.split('\n');
+  }
+  const paras = lines.map((l, i) =>
+    new Paragraph({ children: [new TextRun({ text: l || ' ', bold: i === 0 && from !== 'csv', size: 24 })], spacing: { after: 160 } })
+  );
+  const doc = new Document({ sections: [{ properties: {}, children: paras }] });
+  const blob = await Packer.toBlob(doc);
+  triggerDownload(blob, `converted_${from}_to_word.docx`);
+  showToast(`Downloaded converted_${from}_to_word.docx`);
+}
+
+function convertToExcel(from, input) {
+  let wsData = [];
+  if (from === 'csv') {
+    const lines = input.split('\n').map(l => l.trim()).filter(Boolean);
+    wsData = lines.map(l => parseCsvLine(l));
+  } else if (from === 'json') {
+    const arr  = JSON.parse(input);
+    const keys = [...new Set(arr.flatMap(r => Object.keys(r)))];
+    wsData = [keys, ...arr.map(r => keys.map(k => r[k] !== undefined ? String(r[k]) : ''))];
+  } else if (from === 'html') {
+    const div = document.createElement('div');
+    div.innerHTML = input;
+    const rows = div.querySelectorAll('tr');
+    if (rows.length) {
+      rows.forEach(r => wsData.push(Array.from(r.querySelectorAll('th,td')).map(c => c.textContent.trim())));
+    } else {
+      wsData = [['Content'], ...(div.textContent||'').split('\n').filter(Boolean).map(l => [l])];
+    }
+  } else {
+    wsData = [['Content'], ...input.split('\n').filter(Boolean).map(l => [l])];
+  }
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+  for (let C = range.s.c; C <= range.e.c; C++) {
+    const cell = ws[XLSX.utils.encode_cell({ r: 0, c: C })];
+    if (cell) cell.s = { font: { bold: true }, fill: { fgColor: { rgb: 'CBD5E1' } }, alignment: { horizontal: 'center' } };
+  }
+  if (wsData[0]) ws['!cols'] = wsData[0].map((_, i) => ({
+    wch: Math.min(Math.max(...wsData.map(r => (r[i]||'').toString().length)) + 4, 40)
+  }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+  const fname = `converted_${from}_to_excel.xlsx`;
+  XLSX.writeFile(wb, fname);
+  showToast(`Downloaded ${fname}`);
+}
+
+function convertToCsv(from, input) {
+  let rows = [];
+  if (from === 'csv') {
+    rows = input.split('\n').filter(Boolean).map(l => parseCsvLine(l));
+  } else if (from === 'json') {
+    const arr  = JSON.parse(input);
+    const keys = [...new Set(arr.flatMap(r => Object.keys(r)))];
+    rows = [keys, ...arr.map(r => keys.map(k => String(r[k] !== undefined ? r[k] : '')))];
+  } else if (from === 'html') {
+    const div = document.createElement('div');
+    div.innerHTML = input;
+    rows = [['Content'], ...(div.textContent||'').split('\n').filter(Boolean).map(l => [l])];
+  } else {
+    rows = [['Content'], ...input.split('\n').filter(Boolean).map(l => [l])];
+  }
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const fname = `converted_${from}_to.csv`;
+  triggerDownload(blob, fname);
+  showToast(`Downloaded ${fname}`);
+}
+
+// ═══════════════════════════════════════════════
+// READ DEMO
+// ═══════════════════════════════════════════════
+
+const READ_CODE = {
+  docx:  `<span class="kw">string</span> text = <span class="kw">await</span> _wordService.<span class="met">ReadWordAsync</span>(bytes);\nConsole.<span class="met">WriteLine</span>(text);`,
+  xlsx:  `<span class="cls">List</span>&lt;<span class="cls">Dictionary</span>&lt;<span class="kw">string</span>,<span class="kw">string</span>&gt;&gt; rows =\n    <span class="kw">await</span> _excelService.<span class="met">ReadExcelAsync</span>(bytes);\n\n<span class="kw">foreach</span> (<span class="kw">var</span> row <span class="kw">in</span> rows)\n    Console.<span class="met">WriteLine</span>(row[<span class="str">"Column1"</span>]);`,
+  csv:   `<span class="kw">var</span> rows = _csvService.<span class="met">ReadCsv</span>(<span class="str">"file.csv"</span>);\n<span class="kw">foreach</span> (<span class="kw">var</span> row <span class="kw">in</span> rows)\n    Console.<span class="met">WriteLine</span>(row[<span class="str">"Name"</span>]);`,
+  html:  `<span class="kw">string</span> text   = _htmlService.<span class="met">ReadHtml</span>(<span class="str">"page.html"</span>);\n<span class="kw">var</span>    tables = _htmlService.<span class="met">ExtractTables</span>(<span class="str">"page.html"</span>);`,
+  txt:   `<span class="kw">string</span> text = <span class="kw">await</span> _wordService.<span class="met">ReadWordAsync</span>(bytes);`,
+};
+
+async function handleReadFile(file) {
+  if (!file) return;
+  const ext  = file.name.split('.').pop().toLowerCase();
+  const wrap = document.getElementById('read-output-wrap');
+  const badge= document.getElementById('read-output-badge');
+  const info = document.getElementById('read-file-info');
+
+  document.getElementById('read-stat-name').textContent = '📄 ' + file.name;
+  document.getElementById('read-stat-size').textContent = formatBytes(file.size);
+  document.getElementById('read-stat-type').textContent = ext.toUpperCase();
+  info.style.display = '';
+
+  document.getElementById('read-code-preview').innerHTML =
+    READ_CODE[ext] || `<span class="cmt">// No matching DocFlow service for .${ext}</span>`;
+
+  wrap.innerHTML = '<div style="color:var(--muted);padding:20px">Reading…</div>';
+  badge.textContent = '';
+
+  try {
+    if (ext === 'xlsx') {
+      const buf = await readAsArrayBuffer(file);
+      const wb  = XLSX.read(buf, { type: 'array' });
+      const ws  = wb.Sheets[wb.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      if (!data.length) { wrap.innerHTML = '<div style="color:var(--muted);padding:16px">Empty spreadsheet</div>'; return; }
+      const keys = Object.keys(data[0]);
+      wrap.innerHTML = `<table class="read-output-table">
+        <thead><tr>${keys.map(k => `<th>${esc(k)}</th>`).join('')}</tr></thead>
+        <tbody>${data.slice(0,100).map(r => `<tr>${keys.map(k => `<td>${esc(String(r[k]||''))}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>`;
+      badge.textContent = `${data.length} rows · ${keys.length} cols`;
+
+    } else if (ext === 'docx') {
+      const buf = await readAsArrayBuffer(file);
+      const result = await mammoth.extractRawValue({ arrayBuffer: buf });
+      const text = result.value || '(no text found)';
+      wrap.innerHTML = `<div class="read-output">${esc(text)}</div>`;
+      badge.textContent = `~${text.split(/\s+/).filter(Boolean).length} words`;
+
+    } else if (ext === 'csv') {
+      const text  = await readAsText(file);
+      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      const rows  = lines.map(l => parseCsvLine(l));
+      if (rows.length < 2) { wrap.innerHTML = `<div class="read-output">${esc(text)}</div>`; return; }
+      const hdr = rows[0];
+      wrap.innerHTML = `<table class="read-output-table">
+        <thead><tr>${hdr.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead>
+        <tbody>${rows.slice(1,101).map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>`;
+      badge.textContent = `${rows.length - 1} rows · ${hdr.length} cols`;
+
+    } else if (ext === 'html' || ext === 'htm') {
+      const text = await readAsText(file);
+      const div  = document.createElement('div');
+      div.innerHTML = text;
+      const plain = div.textContent || '';
+      wrap.innerHTML = `<div class="read-output">${esc(plain.trim())}</div>`;
+      badge.textContent = `~${plain.split(/\s+/).filter(Boolean).length} words`;
+
+    } else {
+      const text = await readAsText(file);
+      wrap.innerHTML = `<div class="read-output">${esc(text)}</div>`;
+      badge.textContent = `${text.split('\n').length} lines`;
+    }
+  } catch(e) {
+    wrap.innerHTML = `<div style="color:var(--red);padding:16px">Error: ${esc(e.message)}</div>`;
+    showToast('Read error: ' + e.message, 'error');
+  }
+
+  // Setup drag-and-drop icon update
+  const dz = document.getElementById('read-dropzone');
+  dz.querySelector('.dz-icon').textContent = '✅';
+  dz.querySelector('.dz-text').innerHTML = `<strong>${esc(file.name)}</strong> loaded — drop another to replace`;
+}
+
+function readAsArrayBuffer(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload  = e => res(e.target.result);
+    r.onerror = () => rej(new Error('Failed to read file'));
+    r.readAsArrayBuffer(file);
+  });
+}
+
+function readAsText(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload  = e => res(e.target.result);
+    r.onerror = () => rej(new Error('Failed to read file'));
+    r.readAsText(file);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a   = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+function sanitizeFilename(name) {
+  return name.replace(/[^a-z0-9_\-\s]/gi, '_').replace(/\s+/g, '_');
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+
+// ═══════════════════════════════════════════════
+// DRAG AND DROP for read dropzone
+// ═══════════════════════════════════════════════
+
+function initDropzone() {
+  const dz = document.getElementById('read-dropzone');
+  if (!dz) return;
+  dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) handleReadFile(file);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', () => {
+  initThemeToggle();
+  initDropzone();
+
+  // Word live preview
+  ['wd-title','wd-author','wd-body'].forEach(id =>
+    document.getElementById(id).addEventListener('input', updateWordCodePreview)
+  );
+  updateWordCodePreview();
+
+  // Word template live preview — inject preview div then wire inputs
+  const wdTplRight = document.querySelector('#wd-placeholder-section .demo-code-col');
+  if (wdTplRight) {
+    const previewDiv = document.createElement('div');
+    previewDiv.className = 'template-live-preview';
+    previewDiv.innerHTML = `<div class="tlp-header"><span>Filled Preview</span><span style="color:var(--green);font-size:10px">● live</span></div><div class="tlp-body" id="wd-tpl-live"></div>`;
+    wdTplRight.insertBefore(previewDiv, wdTplRight.firstChild);
+  }
+  document.querySelectorAll('.ph-input').forEach(el =>
+    el.addEventListener('input', updateWordTemplateLivePreview)
+  );
+  updateWordTemplateLivePreview();
+
+  // Excel: header rebuild preserving values by index (column mismatch fix)
+  document.getElementById('xl-headers').addEventListener('input', () => {
+    const existingVals = Array.from(document.querySelectorAll('#xl-rows-container .xl-row-input'))
+      .map(wrap => Array.from(wrap.querySelectorAll('input')).map(i => i.value));
+    document.getElementById('xl-rows-container').innerHTML = '';
+    existingVals.forEach(vals => addExcelRow(vals));
+  });
+
+  document.getElementById('xl-sheetname').addEventListener('input', refreshExcelPreview);
+
+  // Excel template live preview
+  document.querySelectorAll('.xl-ph-input').forEach(el =>
+    el.addEventListener('input', updateExcelTemplateLivePreview)
+  );
+  updateExcelTemplateLivePreview();
+
+  // Placeholder section toggle
+  document.getElementById('wd-placeholders').addEventListener('change', e => {
+    document.getElementById('wd-placeholder-section').style.display = e.target.checked ? '' : 'none';
+  });
+
+  // Convert demo: init note + label
+  onConvFormatChange();
+
+  // Init Excel rows
+  resetExcelRows();
+
+  // Copy buttons — run after DOM is ready, then again after a tick for dynamic code blocks
+  initCopyButtons();
+  setTimeout(initCopyButtons, 500);
+});
+
+// ═══════════════════════════════════════════════
+// SCROLLSPY
+// ═══════════════════════════════════════════════
+
+const _sections = document.querySelectorAll('section[id]');
+const _links    = document.querySelectorAll('nav a');
+const _spy = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      _links.forEach(l => l.classList.remove('active'));
+      const a = document.querySelector(`nav a[href="#${e.target.id}"]`);
+      if (a) a.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+_sections.forEach(s => _spy.observe(s));
+
+</script>
+
+</body>
+</html>

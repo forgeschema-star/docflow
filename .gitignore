@@ -1,0 +1,13 @@
+bin/
+obj/
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.nupkg
+*.snupkg
+packages/
+DocFlowOutput/
+.DS_Store
+Thumbs.db
