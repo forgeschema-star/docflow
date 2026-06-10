@@ -88,9 +88,10 @@ namespace DocFlow.Core.Services
                         {
                             filePath = Path.Combine(outputDirectory, string.Format("page-{0}-image-{1}.png", pageNumber, imageIndex));
                         }
-                        else if (!image.TryGetBytes(out bytes))
+                        else
                         {
-                            bytes = image.RawBytes.ToArray();
+                            IReadOnlyList<byte> rawList;
+                            bytes = image.TryGetBytes(out rawList) ? rawList.ToArray() : image.RawBytes.ToArray();
                         }
 
                         File.WriteAllBytes(filePath, bytes);
@@ -390,7 +391,7 @@ namespace DocFlow.Core.Services
         {
             var groups = new List<LineGroup>();
             foreach (var letter in page.Letters
-                         .Where(letter => !char.IsControl(letter.Value))
+                         .Where(letter => !string.IsNullOrEmpty(letter.Value) && !char.IsControl(letter.Value[0]))
                          .OrderByDescending(letter => letter.GlyphRectangle.Bottom)
                          .ThenBy(letter => letter.GlyphRectangle.Left))
             {
@@ -439,7 +440,7 @@ namespace DocFlow.Core.Services
                     }
                 }
 
-                builder.Append(char.IsWhiteSpace(letter.Value) ? ' ' : letter.Value);
+                builder.Append(!string.IsNullOrEmpty(letter.Value) && char.IsWhiteSpace(letter.Value[0]) ? " " : letter.Value);
                 previousRight = letter.GlyphRectangle.Right;
                 first = false;
             }

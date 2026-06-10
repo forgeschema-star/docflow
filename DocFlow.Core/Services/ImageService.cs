@@ -4,9 +4,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DocFlow.Core.Interfaces;
-using QuestPDF.Fluent;
-using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
+using PdfSharpCore.Drawing;
+using PdfSharpCore.Pdf;
 using Tesseract;
 
 namespace DocFlow.Core.Services
@@ -18,12 +17,7 @@ namespace DocFlow.Core.Services
         private readonly ILogger _logger;
         private readonly Models.DocFlowSettings _settings;
 
-        static ImageService()
-        {
-            QuestPDF.Settings.License = LicenseType.Community;
-        }
-
-        public ImageService(IWordService wordService, IExcelService excelService, ILogger logger = null, Models.DocFlowSettings settings = null)
+public ImageService(IWordService wordService, IExcelService excelService, ILogger logger = null, Models.DocFlowSettings settings = null)
         {
             _wordService = wordService ?? throw new ArgumentNullException(nameof(wordService));
             _excelService = excelService ?? throw new ArgumentNullException(nameof(excelService));
@@ -54,17 +48,17 @@ namespace DocFlow.Core.Services
             Helpers.FileHelper.EnsureCanWriteOutput(outputPath, _settings.AllowOverwrite);
 
             var bytes = File.ReadAllBytes(inputPath);
-            using (var stream = File.Create(outputPath))
+            using (var pdf = new PdfDocument())
             {
-                Document.Create(container =>
+                var page = pdf.AddPage();
+                page.Size = PdfSharpCore.PageSize.A4;
+                using (var gfx = XGraphics.FromPdfPage(page))
                 {
-                    container.Page(page =>
-                    {
-                        page.Margin(20);
-                        page.Size(PageSizes.A4);
-                        page.Content().Image(bytes);
-                    });
-                }).GeneratePdf(stream);
+                    const double margin = 20;
+                    var img = XImage.FromStream(() => new MemoryStream(bytes));
+                    gfx.DrawImage(img, margin, margin, page.Width - margin * 2, page.Height - margin * 2);
+                }
+                pdf.Save(outputPath);
             }
         }
 

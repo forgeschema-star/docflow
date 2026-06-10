@@ -181,12 +181,10 @@ DocFlow.Core is built on top of these open-source libraries:
 |---|---|---|---|
 | [DocumentFormat.OpenXml](https://github.com/dotnet/Open-XML-SDK) | 2.20.0 | Read/write `.docx` files | MIT |
 | [ClosedXML](https://github.com/ClosedXML/ClosedXML) | 0.104.2 | Read/write `.xlsx` files | MIT |
-| [QuestPDF](https://www.questpdf.com) | 2023.12.6 | Generate PDF documents | Community (free for non-commercial / small revenue) |
+| [PdfSharpCore](https://github.com/ststeiger/PdfSharpCore) | 1.3.62 | Generate PDF documents (includes MigraDocCore for layouts) | MIT |
 | [HtmlAgilityPack](https://html-agility-pack.net) | 1.12.4 | Parse HTML, extract text & tables | MIT |
 | [Tesseract](https://github.com/charlesw/tesseract) | 5.2.0 | OCR text extraction from images | Apache 2.0 |
 | [UglyToad.PdfPig](https://github.com/UglyToad/PdfPig) | 0.1.10 | Read PDF text & extract images | Apache 2.0 |
-
-> **QuestPDF notice:** QuestPDF is free under the Community licence for non-commercial use or commercial revenue < $1M/year. Since DocFlow is a hobby project, the Community licence applies. Check [questpdf.com/license](https://www.questpdf.com/license.html) if you use it in a commercial product.
 
 ---
 

@@ -9,9 +9,8 @@ using DocFlow.Core.Interfaces;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-using QuestPDF.Fluent;
-using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
+using PdfSharpCore.Drawing;
+using PdfSharpCore.Pdf;
 
 namespace DocFlow.Core.Services
 {
@@ -20,12 +19,7 @@ namespace DocFlow.Core.Services
         private readonly ILogger _logger;
         private readonly Models.DocFlowSettings _settings;
 
-        static WordService()
-        {
-            QuestPDF.Settings.License = LicenseType.Community;
-        }
-
-        public WordService(ILogger logger = null, Models.DocFlowSettings settings = null)
+public WordService(ILogger logger = null, Models.DocFlowSettings settings = null)
         {
             _logger = logger ?? new NullLogger();
             _settings = settings ?? Models.DocFlowSettings.CreateDefault();
@@ -476,39 +470,53 @@ namespace DocFlow.Core.Services
 
         private static void RenderBlocksToPdf(IList<TextBlock> blocks, Stream output)
         {
-            if (output.CanSeek)
-            {
-                output.SetLength(0);
-                output.Position = 0;
-            }
+            const double margin = 36;
 
-            Document.Create(container =>
+            using (var pdf = new PdfDocument())
             {
-                container.Page(page =>
+                var page = pdf.AddPage();
+                page.Size = PdfSharpCore.PageSize.A4;
+                XGraphics gfx = XGraphics.FromPdfPage(page);
+                double yPos = margin;
+
+                try
                 {
-                    page.Margin(36);
-                    page.Size(PageSizes.A4);
-                    page.DefaultTextStyle(x => x.FontSize(11));
-                    page.Content().Column(column =>
+                    foreach (var block in blocks)
                     {
-                        foreach (var block in blocks)
-                        {
-                            if (block.Type == TextBlockType.Heading)
-                            {
-                                column.Item().PaddingBottom(8).Text(block.Text).FontSize(block.Level == 1 ? 18 : block.Level == 2 ? 16 : 14).Bold();
-                            }
-                            else
-                            {
-                                column.Item().PaddingBottom(10).Text(block.Text).FontSize(11);
-                            }
-                        }
-                    });
-                });
-            }).GeneratePdf(output);
+                        double fontSize  = block.Type == TextBlockType.Heading ? (block.Level == 1 ? 18 : block.Level == 2 ? 16 : 14) : 11;
+                        XFontStyle style = block.Type == TextBlockType.Heading ? XFontStyle.Bold : XFontStyle.Regular;
+                        double lineH     = fontSize + 6;
+                        double spaceAfter = block.Type == TextBlockType.Heading ? 8 : 10;
 
-            if (output.CanSeek)
-            {
-                output.Position = 0;
+                        if (yPos + lineH > page.Height - margin)
+                        {
+                            gfx.Dispose();
+                            page      = pdf.AddPage();
+                            page.Size = PdfSharpCore.PageSize.A4;
+                            gfx       = XGraphics.FromPdfPage(page);
+                            yPos      = margin;
+                        }
+
+                        var font = new XFont("Arial", fontSize, style);
+                        gfx.DrawString(block.Text ?? string.Empty, font, XBrushes.Black,
+                            new XRect(margin, yPos, page.Width - margin * 2, lineH),
+                            XStringFormats.TopLeft);
+                        yPos += lineH + spaceAfter;
+                    }
+                }
+                finally
+                {
+                    gfx.Dispose();
+                }
+
+                using (var ms = new MemoryStream())
+                {
+                    pdf.Save(ms);
+                    ms.Position = 0;
+                    if (output.CanSeek) { output.SetLength(0); output.Position = 0; }
+                    ms.CopyTo(output);
+                    if (output.CanSeek) { output.Position = 0; }
+                }
             }
         }
 

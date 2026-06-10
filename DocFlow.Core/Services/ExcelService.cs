@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 using ClosedXML.Excel;
 using DocFlow.Core.Helpers;
 using DocFlow.Core.Interfaces;
-using QuestPDF.Fluent;
-using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
+using PdfSharpCore.Drawing;
+using PdfSharpCore.Pdf;
 
 namespace DocFlow.Core.Services
 {
@@ -18,12 +17,7 @@ namespace DocFlow.Core.Services
         private readonly ILogger _logger;
         private readonly Models.DocFlowSettings _settings;
 
-        static ExcelService()
-        {
-            QuestPDF.Settings.License = LicenseType.Community;
-        }
-
-        public ExcelService(ILogger logger = null, Models.DocFlowSettings settings = null)
+public ExcelService(ILogger logger = null, Models.DocFlowSettings settings = null)
         {
             _logger = logger ?? new NullLogger();
             _settings = settings ?? Models.DocFlowSettings.CreateDefault();
@@ -245,7 +239,7 @@ namespace DocFlow.Core.Services
                     {
                         foreach (var cell in worksheet.CellsUsed())
                         {
-                            if (!cell.IsFormula)
+                            if (!cell.HasFormula)
                             {
                                 cell.Value = PlaceholderHelper.ReplacePlaceholders(cell.GetValue<string>(), placeholders);
                             }
@@ -441,60 +435,88 @@ namespace DocFlow.Core.Services
         private static void RenderTableToPdf(List<Dictionary<string, string>> data, Stream output)
         {
             var headers = ResolveHeaders(data);
-            if (output.CanSeek)
-            {
-                output.SetLength(0);
-                output.Position = 0;
-            }
 
-            Document.Create(container =>
+            const double margin    = 24;
+            const double rowHeight = 18;
+            const double titleGap  = 30;
+
+            using (var pdf = new PdfDocument())
             {
-                container.Page(page =>
+                var page = pdf.AddPage();
+                page.Size        = PdfSharpCore.PageSize.A4;
+                page.Orientation = PdfSharpCore.PageOrientation.Landscape;
+
+                double pageWidth  = page.Width;
+                double pageHeight = page.Height;
+                double usableW    = pageWidth - margin * 2;
+                int    colCount   = Math.Max(1, headers.Count);
+                double colWidth   = usableW / colCount;
+
+                XGraphics gfx  = XGraphics.FromPdfPage(page);
+                double    yPos = margin;
+
+                try
                 {
-                    page.Margin(24);
-                    page.Size(PageSizes.A4.Landscape());
-                    page.DefaultTextStyle(x => x.FontSize(10));
-                    page.Header().Text("Excel Export").Bold().FontSize(16);
-                    page.Content().Table(table =>
+                    // Title
+                    var titleFont = new XFont("Arial", 16, XFontStyle.Bold);
+                    gfx.DrawString("Excel Export", titleFont, XBrushes.Black,
+                        new XRect(margin, yPos, usableW, titleGap), XStringFormats.TopLeft);
+                    yPos += titleGap;
+
+                    // Header row
+                    var headerFont = new XFont("Arial", 10, XFontStyle.Bold);
+                    var headerBg   = new XSolidBrush(XColor.FromArgb(0xDD, 0xDD, 0xDD));
+                    var borderPen  = new XPen(XColor.FromArgb(0xBB, 0xBB, 0xBB), 0.5);
+
+                    for (int i = 0; i < headers.Count; i++)
                     {
-                        table.ColumnsDefinition(columns =>
-                        {
-                            foreach (var header in headers)
-                            {
-                                columns.RelativeColumn();
-                            }
-                        });
+                        double x = margin + i * colWidth;
+                        gfx.DrawRectangle(borderPen, headerBg, x, yPos, colWidth, rowHeight);
+                        gfx.DrawString(headers[i], headerFont, XBrushes.Black,
+                            new XRect(x + 2, yPos + 2, colWidth - 4, rowHeight - 4), XStringFormats.TopLeft);
+                    }
+                    yPos += rowHeight;
 
-                        table.Header(header =>
+                    // Data rows
+                    var bodyFont = new XFont("Arial", 9, XFontStyle.Regular);
+                    foreach (var row in data)
+                    {
+                        if (yPos + rowHeight > pageHeight - margin)
                         {
-                            foreach (var title in headers)
-                            {
-                                header.Cell().Element(CellStyle).Background(Colors.Grey.Lighten2).Text(title).Bold();
-                            }
-                        });
-
-                        foreach (var row in data)
-                        {
-                            foreach (var header in headers)
-                            {
-                                string value;
-                                row.TryGetValue(header, out value);
-                                table.Cell().Element(CellStyle).Text(value ?? string.Empty);
-                            }
+                            gfx.Dispose();
+                            page             = pdf.AddPage();
+                            page.Size        = PdfSharpCore.PageSize.A4;
+                            page.Orientation = PdfSharpCore.PageOrientation.Landscape;
+                            gfx              = XGraphics.FromPdfPage(page);
+                            yPos             = margin;
                         }
-                    });
-                });
-            }).GeneratePdf(output);
 
-            if (output.CanSeek)
-            {
-                output.Position = 0;
+                        for (int i = 0; i < headers.Count; i++)
+                        {
+                            string value;
+                            row.TryGetValue(headers[i], out value);
+                            double x = margin + i * colWidth;
+                            gfx.DrawRectangle(borderPen, XBrushes.White, x, yPos, colWidth, rowHeight);
+                            gfx.DrawString(value ?? string.Empty, bodyFont, XBrushes.Black,
+                                new XRect(x + 2, yPos + 2, colWidth - 4, rowHeight - 4), XStringFormats.TopLeft);
+                        }
+                        yPos += rowHeight;
+                    }
+                }
+                finally
+                {
+                    gfx.Dispose();
+                }
+
+                using (var ms = new MemoryStream())
+                {
+                    pdf.Save(ms);
+                    ms.Position = 0;
+                    if (output.CanSeek) { output.SetLength(0); output.Position = 0; }
+                    ms.CopyTo(output);
+                    if (output.CanSeek) { output.Position = 0; }
+                }
             }
-        }
-
-        private static IContainer CellStyle(IContainer container)
-        {
-            return container.Border(1).BorderColor(Colors.Grey.Lighten2).Padding(4);
         }
     }
 }
