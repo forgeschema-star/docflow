@@ -518,5 +518,141 @@ public ExcelService(ILogger logger = null, Models.DocFlowSettings settings = nul
                 }
             }
         }
+
+        // ── Rich-cell overloads ──────────────────────────────────────────────
+
+        public void CreateExcel(Stream output, System.Collections.Generic.IList<System.Collections.Generic.IList<Models.ExcelCell>> rows)
+        {
+            StreamHelper.EnsureWritable(output, nameof(output));
+            if (rows == null) { throw new ArgumentNullException(nameof(rows)); }
+
+            try
+            {
+                if (output.CanSeek) { output.SetLength(0); output.Position = 0; }
+
+                using (var workbook = new XLWorkbook())
+                {
+                    var ws = workbook.Worksheets.Add("Sheet1");
+                    for (int r = 0; r < rows.Count; r++)
+                    {
+                        var row = rows[r];
+                        if (row == null) { continue; }
+                        for (int c = 0; c < row.Count; c++)
+                        {
+                            var def = row[c];
+                            if (def == null) { continue; }
+                            var cell = ws.Cell(r + 1, c + 1);
+                            ApplyCellData(cell, def);
+                            ApplyCellStyle(cell, def);
+                        }
+                    }
+                    ws.Columns().AdjustToContents();
+                    workbook.SaveAs(output);
+                }
+
+                if (output.CanSeek) { output.Position = 0; }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to create rich Excel document.", ex);
+                throw new InvalidOperationException("Excel document creation failed.", ex);
+            }
+        }
+
+        public byte[] CreateExcel(System.Collections.Generic.IList<System.Collections.Generic.IList<Models.ExcelCell>> rows)
+        {
+            using (var ms = new MemoryStream()) { CreateExcel(ms, rows); return ms.ToArray(); }
+        }
+
+        public void CreateExcel(string path, System.Collections.Generic.IList<System.Collections.Generic.IList<Models.ExcelCell>> rows)
+        {
+            FileHelper.EnsurePath(path, nameof(path));
+            FileHelper.EnsureDocumentType(path, Models.DocumentType.Excel);
+            FileHelper.EnsureCanWriteOutput(path, _settings.AllowOverwrite);
+            using (var stream = File.Create(path)) { CreateExcel(stream, rows); }
+        }
+
+        public Task CreateExcelAsync(string path, System.Collections.Generic.IList<System.Collections.Generic.IList<Models.ExcelCell>> rows, CancellationToken cancellationToken = default)
+            => Task.Run(() => { cancellationToken.ThrowIfCancellationRequested(); CreateExcel(path, rows); }, cancellationToken);
+
+        public Task CreateExcelAsync(Stream output, System.Collections.Generic.IList<System.Collections.Generic.IList<Models.ExcelCell>> rows, CancellationToken cancellationToken = default)
+            => Task.Run(() => { cancellationToken.ThrowIfCancellationRequested(); CreateExcel(output, rows); }, cancellationToken);
+
+        public Task<byte[]> CreateExcelAsync(System.Collections.Generic.IList<System.Collections.Generic.IList<Models.ExcelCell>> rows, CancellationToken cancellationToken = default)
+            => Task.Run(() => { cancellationToken.ThrowIfCancellationRequested(); return CreateExcel(rows); }, cancellationToken);
+
+        // ── Chart overloads ──────────────────────────────────────────────────
+
+        public void CreateExcelWithChart(Stream output, System.Collections.Generic.IList<System.Collections.Generic.IList<Models.ExcelCell>> rows, Models.ChartDefinition chart)
+        {
+            StreamHelper.EnsureWritable(output, nameof(output));
+            if (rows == null) { throw new ArgumentNullException(nameof(rows)); }
+            if (chart == null) { throw new ArgumentNullException(nameof(chart)); }
+
+            using (var ms = new MemoryStream())
+            {
+                CreateExcel(ms, rows);
+                Helpers.ExcelChartHelper.InjectChart(ms, chart, rows.Count, "Sheet1");
+                ms.Position = 0;
+                if (output.CanSeek) { output.SetLength(0); output.Position = 0; }
+                ms.CopyTo(output);
+                if (output.CanSeek) { output.Position = 0; }
+            }
+        }
+
+        public byte[] CreateExcelWithChart(System.Collections.Generic.IList<System.Collections.Generic.IList<Models.ExcelCell>> rows, Models.ChartDefinition chart)
+        {
+            using (var ms = new MemoryStream()) { CreateExcelWithChart(ms, rows, chart); return ms.ToArray(); }
+        }
+
+        public void CreateExcelWithChart(string path, System.Collections.Generic.IList<System.Collections.Generic.IList<Models.ExcelCell>> rows, Models.ChartDefinition chart)
+        {
+            FileHelper.EnsurePath(path, nameof(path));
+            FileHelper.EnsureDocumentType(path, Models.DocumentType.Excel);
+            FileHelper.EnsureCanWriteOutput(path, _settings.AllowOverwrite);
+            using (var stream = File.Create(path)) { CreateExcelWithChart(stream, rows, chart); }
+        }
+
+        public Task CreateExcelWithChartAsync(string path, System.Collections.Generic.IList<System.Collections.Generic.IList<Models.ExcelCell>> rows, Models.ChartDefinition chart, CancellationToken cancellationToken = default)
+            => Task.Run(() => { cancellationToken.ThrowIfCancellationRequested(); CreateExcelWithChart(path, rows, chart); }, cancellationToken);
+
+        public Task CreateExcelWithChartAsync(Stream output, System.Collections.Generic.IList<System.Collections.Generic.IList<Models.ExcelCell>> rows, Models.ChartDefinition chart, CancellationToken cancellationToken = default)
+            => Task.Run(() => { cancellationToken.ThrowIfCancellationRequested(); CreateExcelWithChart(output, rows, chart); }, cancellationToken);
+
+        public Task<byte[]> CreateExcelWithChartAsync(System.Collections.Generic.IList<System.Collections.Generic.IList<Models.ExcelCell>> rows, Models.ChartDefinition chart, CancellationToken cancellationToken = default)
+            => Task.Run(() => { cancellationToken.ThrowIfCancellationRequested(); return CreateExcelWithChart(rows, chart); }, cancellationToken);
+
+        private static void ApplyCellData(IXLCell cell, Models.ExcelCell def)
+        {
+            if (!string.IsNullOrEmpty(def.Formula))
+                cell.FormulaA1 = def.Formula;
+            else
+                cell.Value = def.Value ?? string.Empty;
+        }
+
+        private static void ApplyCellStyle(IXLCell cell, Models.ExcelCell def)
+        {
+            if (def.FontBold)    { cell.Style.Font.Bold = true; }
+            if (def.FontItalic)  { cell.Style.Font.Italic = true; }
+            if (def.FontSize.HasValue) { cell.Style.Font.FontSize = def.FontSize.Value; }
+            if (!string.IsNullOrEmpty(def.FontColor))       { cell.Style.Font.FontColor = XLColor.FromHtml(def.FontColor); }
+            if (!string.IsNullOrEmpty(def.BackgroundColor))
+            {
+                cell.Style.Fill.PatternType = XLFillPatternValues.Solid;
+                cell.Style.Fill.BackgroundColor = XLColor.FromHtml(def.BackgroundColor);
+            }
+            if (!string.IsNullOrEmpty(def.BorderColor))
+            {
+                var bc = XLColor.FromHtml(def.BorderColor);
+                cell.Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
+                cell.Style.Border.SetOutsideBorderColor(bc);
+            }
+            if (def.Alignment != Models.ExcelHorizontalAlignment.Default)
+            {
+                cell.Style.Alignment.Horizontal = def.Alignment == Models.ExcelHorizontalAlignment.Center ? XLAlignmentHorizontalValues.Center
+                    : def.Alignment == Models.ExcelHorizontalAlignment.Right ? XLAlignmentHorizontalValues.Right
+                    : XLAlignmentHorizontalValues.Left;
+            }
+        }
     }
 }

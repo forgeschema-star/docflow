@@ -375,6 +375,122 @@ public WordService(ILogger logger = null, Models.DocFlowSettings settings = null
             }
         }
 
+        // ── Styled WordBlock overloads ───────────────────────────────────────
+
+        public void CreateWord(Stream output, System.Collections.Generic.IList<Models.WordBlock> blocks)
+        {
+            StreamHelper.EnsureWritable(output, nameof(output));
+            if (blocks == null) { throw new ArgumentNullException(nameof(blocks)); }
+
+            try
+            {
+                if (output.CanSeek) { output.SetLength(0); output.Position = 0; }
+
+                using (var document = WordprocessingDocument.Create(output, WordprocessingDocumentType.Document, true))
+                {
+                    var mainPart = document.AddMainDocumentPart();
+                    mainPart.Document = new Document();
+                    EnsureStyles(mainPart);
+                    var body = new Body();
+
+                    foreach (var block in blocks)
+                    {
+                        body.Append(CreateStyledParagraph(block));
+                    }
+
+                    mainPart.Document.Append(body);
+                    mainPart.Document.Save();
+                }
+
+                if (output.CanSeek) { output.Position = 0; }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to create styled Word document.", ex);
+                throw new InvalidOperationException("Word document creation failed.", ex);
+            }
+        }
+
+        public byte[] CreateWord(System.Collections.Generic.IList<Models.WordBlock> blocks)
+        {
+            using (var ms = new MemoryStream()) { CreateWord(ms, blocks); return ms.ToArray(); }
+        }
+
+        public void CreateWord(string path, System.Collections.Generic.IList<Models.WordBlock> blocks)
+        {
+            FileHelper.EnsurePath(path, nameof(path));
+            FileHelper.EnsureDocumentType(path, Models.DocumentType.Word);
+            FileHelper.EnsureCanWriteOutput(path, _settings.AllowOverwrite);
+            using (var stream = File.Create(path)) { CreateWord(stream, blocks); }
+        }
+
+        public Task CreateWordAsync(string path, System.Collections.Generic.IList<Models.WordBlock> blocks, CancellationToken cancellationToken = default)
+            => Task.Run(() => { cancellationToken.ThrowIfCancellationRequested(); CreateWord(path, blocks); }, cancellationToken);
+
+        public Task CreateWordAsync(Stream output, System.Collections.Generic.IList<Models.WordBlock> blocks, CancellationToken cancellationToken = default)
+            => Task.Run(() => { cancellationToken.ThrowIfCancellationRequested(); CreateWord(output, blocks); }, cancellationToken);
+
+        public Task<byte[]> CreateWordAsync(System.Collections.Generic.IList<Models.WordBlock> blocks, CancellationToken cancellationToken = default)
+            => Task.Run(() => { cancellationToken.ThrowIfCancellationRequested(); return CreateWord(blocks); }, cancellationToken);
+
+        private static Paragraph CreateStyledParagraph(Models.WordBlock block)
+        {
+            var para = new Paragraph();
+            var pPr  = new ParagraphProperties();
+
+            if (block.Type == Models.WordBlockType.Heading)
+            {
+                pPr.Append(new ParagraphStyleId { Val = $"Heading{Math.Max(1, Math.Min(3, block.Level))}" });
+            }
+
+            if (!string.IsNullOrEmpty(block.Alignment))
+            {
+                JustificationValues jv;
+                switch (block.Alignment.ToLowerInvariant())
+                {
+                    case "center":  jv = JustificationValues.Center; break;
+                    case "right":   jv = JustificationValues.Right;  break;
+                    case "justify": jv = JustificationValues.Both;   break;
+                    default:        jv = JustificationValues.Left;   break;
+                }
+                pPr.Append(new Justification { Val = jv });
+            }
+
+            if (!string.IsNullOrEmpty(block.BackgroundColor))
+            {
+                pPr.Append(new Shading
+                {
+                    Val   = ShadingPatternValues.Clear,
+                    Color = "auto",
+                    Fill  = block.BackgroundColor.TrimStart('#')
+                });
+            }
+
+            para.Append(pPr);
+
+            var run = new Run();
+            var rPr = new RunProperties();
+
+            bool bold = block.FontBold || block.Type == Models.WordBlockType.Heading;
+            if (bold)              { rPr.Append(new Bold()); }
+            if (block.FontItalic)  { rPr.Append(new Italic()); }
+            if (block.Underline)   { rPr.Append(new Underline { Val = UnderlineValues.Single }); }
+            if (block.FontSize.HasValue)
+            {
+                string halfPt = ((int)(block.FontSize.Value * 2)).ToString();
+                rPr.Append(new FontSize { Val = halfPt });
+            }
+            if (!string.IsNullOrEmpty(block.FontColor))
+            {
+                rPr.Append(new DocumentFormat.OpenXml.Wordprocessing.Color { Val = block.FontColor.TrimStart('#') });
+            }
+
+            run.Append(rPr);
+            run.Append(new Text(block.Text ?? string.Empty) { Space = SpaceProcessingModeValues.Preserve });
+            para.Append(run);
+            return para;
+        }
+
         internal string SerializeBlocks(IEnumerable<TextBlock> blocks)
         {
             var lines = new List<string>();

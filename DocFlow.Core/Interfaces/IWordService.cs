@@ -2,6 +2,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using DocFlow.Core.Models;
 
 namespace DocFlow.Core.Interfaces
 {
@@ -54,5 +55,19 @@ namespace DocFlow.Core.Interfaces
         Task ConvertWordToPdfAsync(Stream input, Stream output, CancellationToken cancellationToken = default);
 
         Task<byte[]> ConvertWordToPdfAsync(byte[] inputBytes, CancellationToken cancellationToken = default);
+
+        // ── Styled-block overloads ───────────────────────────────────────────
+
+        void CreateWord(string path, IList<WordBlock> blocks);
+
+        void CreateWord(Stream output, IList<WordBlock> blocks);
+
+        byte[] CreateWord(IList<WordBlock> blocks);
+
+        Task CreateWordAsync(string path, IList<WordBlock> blocks, CancellationToken cancellationToken = default);
+
+        Task CreateWordAsync(Stream output, IList<WordBlock> blocks, CancellationToken cancellationToken = default);
+
+        Task<byte[]> CreateWordAsync(IList<WordBlock> blocks, CancellationToken cancellationToken = default);
     }
 }

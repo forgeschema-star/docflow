@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using DocFlow.Core.Models;
 
 namespace DocFlow.Core.Interfaces
 {
@@ -54,5 +55,33 @@ namespace DocFlow.Core.Interfaces
         Task ConvertExcelToPdfAsync(Stream input, Stream output, CancellationToken cancellationToken = default);
 
         Task<byte[]> ConvertExcelToPdfAsync(byte[] inputBytes, CancellationToken cancellationToken = default);
+
+        // ── Rich-cell overloads ──────────────────────────────────────────────
+
+        void CreateExcel(string path, IList<IList<ExcelCell>> rows);
+
+        void CreateExcel(Stream output, IList<IList<ExcelCell>> rows);
+
+        byte[] CreateExcel(IList<IList<ExcelCell>> rows);
+
+        Task CreateExcelAsync(string path, IList<IList<ExcelCell>> rows, CancellationToken cancellationToken = default);
+
+        Task CreateExcelAsync(Stream output, IList<IList<ExcelCell>> rows, CancellationToken cancellationToken = default);
+
+        Task<byte[]> CreateExcelAsync(IList<IList<ExcelCell>> rows, CancellationToken cancellationToken = default);
+
+        // ── Chart overloads ──────────────────────────────────────────────────
+
+        void CreateExcelWithChart(string path, IList<IList<ExcelCell>> rows, ChartDefinition chart);
+
+        void CreateExcelWithChart(Stream output, IList<IList<ExcelCell>> rows, ChartDefinition chart);
+
+        byte[] CreateExcelWithChart(IList<IList<ExcelCell>> rows, ChartDefinition chart);
+
+        Task CreateExcelWithChartAsync(string path, IList<IList<ExcelCell>> rows, ChartDefinition chart, CancellationToken cancellationToken = default);
+
+        Task CreateExcelWithChartAsync(Stream output, IList<IList<ExcelCell>> rows, ChartDefinition chart, CancellationToken cancellationToken = default);
+
+        Task<byte[]> CreateExcelWithChartAsync(IList<IList<ExcelCell>> rows, ChartDefinition chart, CancellationToken cancellationToken = default);
     }
 }
